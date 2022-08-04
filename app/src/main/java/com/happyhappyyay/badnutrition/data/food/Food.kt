@@ -10,7 +10,6 @@ import com.happyhappyyay.badnutrition.data.nutrient.NutrientValue
  * @property foodId the id for the food
  * @property name the name of the food
  * @property nutrients the nutrients associated with the food
- * @property mealPartition the relative meal position assigned to the food in a day
  */
 @Entity(tableName = "food_table")
 data class Food(

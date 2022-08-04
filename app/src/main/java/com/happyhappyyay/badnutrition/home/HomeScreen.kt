@@ -8,7 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -26,15 +26,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import com.happyhappyyay.badnutrition.R
+import com.happyhappyyay.badnutrition.calendar.Calendar
 import com.happyhappyyay.badnutrition.data.MockData
 import com.happyhappyyay.badnutrition.data.nutrient.Nutrient
+import com.happyhappyyay.badnutrition.charts.Chart
+import com.happyhappyyay.badnutrition.charts.ChartTypes
+import com.happyhappyyay.badnutrition.day.TimeSpanUnit
 import com.happyhappyyay.badnutrition.ui.theme.BadNutritionTheme
-
-
-enum class HomeScreen {
-    Day, Week, Month, Year
-}
 
 enum class HomeStyle {
     Simple, Standard, Complex
@@ -51,9 +51,20 @@ fun Home(viewModel: HomeViewModel){
 @Composable
 fun HomeContent() {
     val style by remember { mutableStateOf(HomeStyle.Standard)}
+    var dismiss by remember { mutableStateOf(true) }
+    var date by remember { mutableStateOf("05/01/2022")}
+
+    if(!dismiss) {
+        Dialog(onDismissRequest = { dismiss = true }) {
+            Calendar(date = date, setDate = {
+                date = it
+                dismiss = true
+            })
+        }
+    }
     BackdropScaffold(
         modifier = Modifier,
-        appBar = { NutritionAppBar() },
+        appBar = { NutritionAppBar( dismiss = { dismiss = !dismiss}) },
         backLayerContent = { HomeBackLayer() },
         frontLayerContent = { HomeFrontLayer(style = style) },
         gesturesEnabled = true
@@ -73,18 +84,21 @@ fun HomeBackLayer() {
 
 @Composable
 fun HomeFrontLayer(style: HomeStyle) {
-    Column {
-        NutritionHeading()
-        LazyColumn (modifier = Modifier.padding(start = 8.dp, end = 8.dp)){
-            items(MockData().createNutritionList()) { nutritionItem ->
-                when(style) {
-                    HomeStyle.Simple -> SimpleNutritionCard(nutritionItem)
-                    HomeStyle.Standard -> StandardNutritionCard(nutritionItem)
-                    HomeStyle.Complex -> ComplexNutritionCard(nutritionItem)
+        Column {
+            NutritionHeading()
+            LazyColumn (modifier = Modifier.padding(start = 8.dp, end = 8.dp)){
+                itemsIndexed(MockData().createNutritionList()) { ind, nutritionItem ->
+                    if(ind == 0){
+                        Chart(ChartTypes.Bar, MockData().nutrientChartPoints)
+                    }
+                    when(style) {
+                        HomeStyle.Simple -> SimpleNutritionCard(nutritionItem)
+                        HomeStyle.Standard -> StandardNutritionCard(nutritionItem)
+                        HomeStyle.Complex -> ComplexNutritionCard(nutritionItem)
+                    }
                 }
             }
         }
-    }
 }
 
 @Composable
@@ -242,8 +256,6 @@ fun NutritionHeading() {
         modifier = Modifier
             .height(45.dp)
             .fillMaxWidth(),
-        elevation = 8.dp,
-
     ) {
 //        Box(Modifier.background(Brush.horizontalGradient(
 //            listOf(MaterialTheme.colors.background,MaterialTheme.colors.primaryVariant),
@@ -262,8 +274,8 @@ fun NutritionHeading() {
 }
 
 @Composable
-fun NutritionAppBar(){
-    var selected by remember { mutableStateOf(HomeScreen.Day)}
+fun NutritionAppBar(dismiss: () -> Unit){
+    var selected by remember { mutableStateOf(TimeSpanUnit.Day)}
     var filter by remember {
         mutableStateOf(false)
     }
@@ -274,13 +286,13 @@ fun NutritionAppBar(){
             horizontalArrangement = Arrangement.SpaceEvenly
         )
         {
-            IconButton(onClick = { }) {
+            IconButton(onClick = { dismiss() }) {
                 Icon(Icons.Rounded.ArrowBack,null)
             }
-            NutritionFilterItem(screen = HomeScreen.Day, selected = selected, onClick = {selected = it} )
-            NutritionFilterItem(screen = HomeScreen.Week, selected = selected, onClick = {selected = it})
-            NutritionFilterItem(screen = HomeScreen.Month,selected = selected, onClick = {selected = it})
-            NutritionFilterItem(screen = HomeScreen.Year, selected = selected, onClick = {selected = it})
+            NutritionFilterItem(screen = TimeSpanUnit.Day, selected = selected, onClick = {selected = it} )
+            NutritionFilterItem(screen = TimeSpanUnit.Week, selected = selected, onClick = {selected = it})
+            NutritionFilterItem(screen = TimeSpanUnit.Month,selected = selected, onClick = {selected = it})
+            NutritionFilterItem(screen = TimeSpanUnit.Year, selected = selected, onClick = {selected = it})
             IconButton(onClick = { filter = !filter }) {
                 Icon(painter = painterResource(
                     id = if(filter)
@@ -293,7 +305,7 @@ fun NutritionAppBar(){
 }
 
 @Composable
-fun NutritionFilterItem(screen: HomeScreen, selected: HomeScreen, modifier: Modifier = Modifier, onClick: (HomeScreen)-> Unit) {
+fun NutritionFilterItem(screen: TimeSpanUnit, selected: TimeSpanUnit, modifier: Modifier = Modifier, onClick: (TimeSpanUnit)-> Unit) {
     val color by animateColorAsState(
         if(screen == selected)
             MaterialTheme.colors.primaryVariant

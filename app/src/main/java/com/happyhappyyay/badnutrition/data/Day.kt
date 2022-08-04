@@ -8,6 +8,7 @@ import com.happyhappyyay.badnutrition.data.nutrient.NutrientValue
 import java.time.LocalDate
 import java.util.*
 
+
 @Entity(tableName = "day_table")
 data class Day(
     @PrimaryKey

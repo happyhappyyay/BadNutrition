@@ -1,3 +1,10 @@
 Name: nutrition story?
 Card View: fun form?-apple fills for goal %
 Categories for foods?
+
+Chart: https://github.com/ChristopherME/compose-blockchain/blob/master/app/src/main/java/com/christopherelias/blockchain/ui/components/LinearChart.kt
+Calendar: Locale Monday/Sunday first day
+typo at androidx.compose.ui.window AndroidDialog.android.kt Dialog
+
+In-Progress: look up compose tutorial with expanding lorem ipsum thing for food item to expand and show nutrient info
+    values of text needs adjusting more size tolerance

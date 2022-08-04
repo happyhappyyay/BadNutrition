@@ -4,8 +4,8 @@ package com.happyhappyyay.badnutrition.data.nutrient
  *
  * Specific day values for a nutrient.
  *
- * @property name the name of the nutrient value.
- * @property value the value of the nutrient value.
+ * @property nameId the associated Nutrient Info item.
+ * @property value the quantity of the nutrient value.
  *
  */
 data class NutrientValue(
