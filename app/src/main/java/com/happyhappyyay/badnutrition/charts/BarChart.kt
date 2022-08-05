@@ -8,6 +8,8 @@ import androidx.compose.ui.geometry.center
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.*
 import kotlin.math.abs
+import kotlin.math.cos
+import kotlin.math.sin
 
 val colors = arrayOf(Color(255, 117, 109),Color(243,207,198),Color(77, 77, 255),Color(169, 211, 158),Color(200, 158, 211),
 Color(253, 253, 150),Color(244, 194, 194),Color(116, 187, 251),
@@ -30,17 +32,9 @@ fun DrawScope.barChart(points: Array<Float>, nutrients: Array<String>, lineColor
     val xOffset =
         if (points.isNotEmpty()) ((size.width - 4.3F * chartMargin) / points.size) else size.width
     paint.textAlign = Paint.Align.LEFT
+    paint.textSize = 24F
     points.forEachIndexed { ind, y ->
         if(points.size < 32) {
-
-//          Y-AXIS tick marks - month or less
-//            drawLine(
-//                start = Offset(x = currentXOffset + 9, y = yAxisLinePos),
-//                end = Offset(x = currentXOffset + 9, y = yAxisLinePos + chartMargin /1.5F),
-//                color = axesColor,
-//                strokeWidth = Stroke.DefaultMiter
-//            )
-//          Rectangle
             val cordY = bottomValueOfChart - (bottomValueOfChart * (y / 100)) + topValueOfChart
             drawRect(
                 color = Color(0, 0, 0, 26),
@@ -58,22 +52,18 @@ fun DrawScope.barChart(points: Array<Float>, nutrients: Array<String>, lineColor
                 ),
                 size = Size(width = 30F, height =  yAxisLinePos - cordY - 2 ),
             )
-            rotate(270F) {
-                drawIntoCanvas {
-                    it.nativeCanvas.drawText(
-//                        nutrients[ind],
-                        nutrients[ind],
-//                        Y-POSITION
-//                        abs((size.width - size.height)) * .5F + 3F * chartMargin
-                        abs((size.width - size.height)/2) + 3F * chartMargin,
-//                        size.center.y,
-//                        X-POSITION
-//                        Adjustment for rotation of varying heights/widths
-//                        -size.center.y/2 + currentXOffset,
-                        (size.width/size.height) - abs(size.height - size.width)/2F + currentXOffset - 10,
-//                        -((size.width/size.height)* (size.width/8)) + currentXOffset,
-                        paint
-                    )
+            translate(-10F,size.height-(1.2F * chartMargin) - 12) {
+                rotate(270F, pivot = Offset(0F,0F)) {
+                    drawIntoCanvas {
+                        it.nativeCanvas.drawText(
+                            nutrients[ind],
+//                            Y-POSITION
+                            chartMargin,
+//                            X-POSITION
+                            currentXOffset,
+                            paint
+                        )
+                    }
                 }
             }
         }

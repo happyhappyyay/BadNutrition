@@ -26,7 +26,6 @@ fun Chart(type: ChartTypes, data: Array<Float>) {
             .background(Color.Red)
             .fillMaxWidth(),
         elevation = 0.dp
-//        backgroundColor = MaterialTheme.colors.background
     ) {
         Surface(
             modifier = Modifier.padding(0.dp),
