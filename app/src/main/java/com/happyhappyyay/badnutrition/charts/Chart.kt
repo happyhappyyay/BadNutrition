@@ -23,7 +23,6 @@ fun Chart(type: ChartTypes, data: Array<Float>) {
         modifier = Modifier
             .padding(0.dp)
             .height(225.dp)
-            .background(Color.Red)
             .fillMaxWidth(),
         elevation = 0.dp
     ) {

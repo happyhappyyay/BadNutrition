@@ -7,4 +7,6 @@ Calendar: Locale Monday/Sunday first day
 typo at androidx.compose.ui.window AndroidDialog.android.kt Dialog
 
 In-Progress: look up compose tutorial with expanding lorem ipsum thing for food item to expand and show nutrient info
-    values of text needs adjusting more size tolerance
+             horizontal bar graph? Select nutrient items to change graph?
+             streaks for x days in a row meeting goal x?
+             start food section

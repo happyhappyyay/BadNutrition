@@ -3,7 +3,9 @@ package com.happyhappyyay.badnutrition.home
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -19,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.Locale
@@ -35,10 +38,19 @@ import com.happyhappyyay.badnutrition.charts.Chart
 import com.happyhappyyay.badnutrition.charts.ChartTypes
 import com.happyhappyyay.badnutrition.day.TimeSpanUnit
 import com.happyhappyyay.badnutrition.ui.theme.BadNutritionTheme
+import com.happyhappyyay.badnutrition.ui.theme.Shapes
 
 enum class HomeStyle {
     Simple, Standard, Complex
 }
+
+enum class HomeType {
+    Nutrition, Food
+}
+
+val adequateRangeColor = Color(0,255,0, 165)
+val deficientRangeColor = Color(255,0,0,192)
+val emptyBarColor = Color(201,201,201)
 
 @Composable
 fun Home(viewModel: HomeViewModel){
@@ -64,9 +76,9 @@ fun HomeContent() {
     }
     BackdropScaffold(
         modifier = Modifier,
-        appBar = { NutritionAppBar( dismiss = { dismiss = !dismiss}) },
+        appBar = { NutritionAppBar() },
         backLayerContent = { HomeBackLayer() },
-        frontLayerContent = { HomeFrontLayer(style = style) },
+        frontLayerContent = { HomeFrontLayer(dismiss = { dismiss = !dismiss}, style = style) },
         gesturesEnabled = true
     ) {
     }
@@ -83,27 +95,39 @@ fun HomeBackLayer() {
 }
 
 @Composable
-fun HomeFrontLayer(style: HomeStyle) {
-        Column {
-            NutritionHeading()
-            LazyColumn (modifier = Modifier.padding(start = 8.dp, end = 8.dp)){
-                itemsIndexed(MockData().createNutritionList()) { ind, nutritionItem ->
-                    if(ind == 0){
-                        Chart(ChartTypes.Bar, MockData().nutrientChartPoints)
-                    }
-                    when(style) {
-                        HomeStyle.Simple -> SimpleNutritionCard(nutritionItem)
-                        HomeStyle.Standard -> StandardNutritionCard(nutritionItem)
-                        HomeStyle.Complex -> ComplexNutritionCard(nutritionItem)
-                    }
+fun HomeFrontLayer(dismiss: () -> Unit, style: HomeStyle, type: HomeType = HomeType.Nutrition) {
+    when(type) {
+        HomeType.Nutrition -> NutritionHome(style, dismiss)
+        else -> FoodHome(dismiss)
+    }
+}
+@Composable
+fun FoodHome(dismiss: () -> Unit){
+
+}
+
+@Composable
+fun NutritionHome(style: HomeStyle, dismiss: () -> Unit){
+    Column {
+        NutritionHeading(dismiss)
+        LazyColumn (modifier = Modifier.padding(start = 8.dp, end = 8.dp)){
+            itemsIndexed(MockData().createNutritionList()) { ind, nutritionItem ->
+                if(ind == 0){
+                    Chart(ChartTypes.Bar, MockData().nutrientChartPoints)
+                }
+                when(style) {
+                    HomeStyle.Simple -> SimpleNutritionCard(nutritionItem)
+                    HomeStyle.Standard -> StandardNutritionCard(nutritionItem)
+                    HomeStyle.Complex -> ComplexNutritionCard(nutritionItem)
                 }
             }
         }
+    }
 }
 
 @Composable
 fun SimpleNutritionCard(nutrient: Nutrient) {
-    val percentage = Math.round((nutrient.value/(nutrient.goal.min * 1F))*100)
+    val percentage = Math.round((nutrient.value/(nutrient.goal.min * 1F))*99)
     val zero: String = if(percentage < 10)"0" else ""
     val label = nutrient.name
     val maxWidth = if(percentage > 100) 1F else percentage/100F
@@ -126,7 +150,7 @@ fun SimpleNutritionCard(nutrient: Nutrient) {
                         .fillMaxWidth(0.8F)
                         .height(10.dp)
                         .clip(CircleShape)
-                        .background(Color.Gray)
+                        .background(emptyBarColor)
                         .align(Alignment.CenterVertically)
                 ) {
                     Box(
@@ -134,7 +158,7 @@ fun SimpleNutritionCard(nutrient: Nutrient) {
                             .fillMaxWidth(maxWidth * 1F)
                             .height(10.dp)
                             .clip(CircleShape)
-                            .background(if (!overMax && percentage > 50) Color.Green else Color.Red)
+                            .background(if (!overMax && percentage > 50) adequateRangeColor else deficientRangeColor)
                     )
                 }
                 Text("$zero$percentage%", Modifier.padding(end = 8.dp))
@@ -192,18 +216,18 @@ fun StandardNutritionCard(nutrient: Nutrient){
     val overMax = if(nutrient.goal.max > 0) nutrient.value > nutrient.goal.max else false
 
     Card(
+        shape = Shapes.medium,
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
             .wrapContentHeight(),
-        elevation = 2.dp,
-        shape = MaterialTheme.shapes.medium
+        elevation = 10.dp,
     ) {
-        Column {
+        Column  {
             Row (Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween) {
                 Text(
-                    modifier = Modifier.padding(bottom = 4.dp),
+                    modifier = Modifier.padding(8.dp,8.dp,0.dp,0.dp),
                     text = label,
                     style = MaterialTheme.typography.h5,
                     textAlign = TextAlign.Center
@@ -211,17 +235,18 @@ fun StandardNutritionCard(nutrient: Nutrient){
                 Text(
                     text = "$zero$percentage%",
                     modifier = Modifier.padding(top = 8.dp, end = 8.dp),
+                    style = MaterialTheme.typography.h5
                     )
             }
-            Column (modifier = Modifier.padding(8.dp)) {
+            Column (modifier = Modifier.padding(8.dp, 0.dp,8.dp,8.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween) {
                     Text(
                         modifier = Modifier.padding(bottom = 8.dp),
                         text = when {
-                            nutrient.goal.max < 0 -> "Minimum: ${nutrient.goal.min}${nutrient.measurement}"
-                            nutrient.goal.min <= 0 -> "Maximum: ${nutrient.goal.max}${nutrient.measurement}"
+                            nutrient.goal.max < 0 -> "${nutrient.goal.min}${nutrient.measurement} min"
+                            nutrient.goal.min <= 0 -> "${nutrient.goal.max}${nutrient.measurement} max"
                             else -> "${nutrient.goal.min}${nutrient.measurement} - ${nutrient.goal.max}${nutrient.measurement}"
                         }
 
@@ -232,17 +257,19 @@ fun StandardNutritionCard(nutrient: Nutrient){
                 }
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth(0.90F)
-                        .height(10.dp)
+                        .fillMaxWidth(.9F)
+                        .height(14.dp)
                         .clip(CircleShape)
-                        .background(Color.Gray)
+                        .background(emptyBarColor)
+                        .border(BorderStroke(1.dp, Color.Gray))
                 ) {
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth(maxWidth * 1F)
+                            .padding(0.dp, 1.dp)
+                            .fillMaxWidth(maxWidth * .994F)
                             .height(12.dp)
                             .clip(CircleShape)
-                            .background(if (!overMax && percentage > 50) Color.Green else Color.Red)
+                            .background(if (!overMax && percentage > 50) adequateRangeColor else deficientRangeColor)
                     )
                 }
             }
@@ -251,7 +278,7 @@ fun StandardNutritionCard(nutrient: Nutrient){
 }
 
 @Composable
-fun NutritionHeading() {
+fun NutritionHeading(dismiss: () -> Unit) {
     Surface(
         modifier = Modifier
             .height(45.dp)
@@ -269,12 +296,37 @@ fun NutritionHeading() {
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.h5
         )
+        Row (modifier = Modifier.padding(8.dp,0.dp,0.dp,0.dp)){
+            IconButton(onClick = { /*TODO*/ }, enabled = false) {
+                Icon(
+                    painter = painterResource(
+                        id = R.drawable.round_list_alt_black_32,
+                    ),
+                    "Nutrients"
+                )
+            }
+            IconButton(onClick = { /*TODO*/ }) {
+                Icon(
+                    painter = painterResource(
+                        id = R.drawable.round_food_alt_black_32),
+                    "Foods"
+                )
+            }
+        }
+        Row(modifier = Modifier.padding(0.dp,0.dp,8.dp,0.dp), horizontalArrangement = Arrangement.End){
+            IconButton(onClick = {dismiss()} ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.round_calendar_alt_black_32),
+                    contentDescription = "Calendar"
+                )
+            }
+        }
     }
 
 }
 
 @Composable
-fun NutritionAppBar(dismiss: () -> Unit){
+fun NutritionAppBar(){
     var selected by remember { mutableStateOf(TimeSpanUnit.Day)}
     var filter by remember {
         mutableStateOf(false)
@@ -286,7 +338,7 @@ fun NutritionAppBar(dismiss: () -> Unit){
             horizontalArrangement = Arrangement.SpaceEvenly
         )
         {
-            IconButton(onClick = { dismiss() }) {
+            IconButton(onClick = { }) {
                 Icon(Icons.Rounded.ArrowBack,null)
             }
             NutritionFilterItem(screen = TimeSpanUnit.Day, selected = selected, onClick = {selected = it} )
@@ -328,7 +380,8 @@ fun NutritionFilterItem(screen: TimeSpanUnit, selected: TimeSpanUnit, modifier: 
     ){
          Surface(
              color = color,
-             shape = MaterialTheme.shapes.medium
+             shape = MaterialTheme.shapes.large,
+             border = BorderStroke(0.25.dp, Color.DarkGray)
 
 
          ) {

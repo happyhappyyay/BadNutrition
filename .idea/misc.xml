@@ -4,6 +4,9 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Users/Diety/AndroidStudioProjects/BadNutrition/app/src/main/res/drawable-mdpi/round_filter_alt_20.xml" value="0.1" />
+        <entry key="..\:/Users/Diety/AndroidStudioProjects/BadNutrition/app/src/main/res/drawable/round_calendar_alt_black_32.xml" value="0.1125" />
+        <entry key="..\:/Users/Diety/AndroidStudioProjects/BadNutrition/app/src/main/res/drawable/round_food_alt_black_36.xml" value="0.1125" />
+        <entry key="..\:/Users/Diety/AndroidStudioProjects/BadNutrition/app/src/main/res/drawable/round_food_alt_black_48.xml" value="0.1125" />
       </map>
     </option>
   </component>
