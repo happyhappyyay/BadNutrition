@@ -1,12 +1,16 @@
 Name: nutrition story?
 Card View: fun form?-apple fills for goal %
 Categories for foods?
+LOGO? Inset Apple into book? or Sheet?
 
 Chart: https://github.com/ChristopherME/compose-blockchain/blob/master/app/src/main/java/com/christopherelias/blockchain/ui/components/LinearChart.kt
 Calendar: Locale Monday/Sunday first day
 typo at androidx.compose.ui.window AndroidDialog.android.kt Dialog
 
-In-Progress: look up compose tutorial with expanding lorem ipsum thing for food item to expand and show nutrient info
+In-Progress:
              horizontal bar graph? Select nutrient items to change graph?
+             list all dates/partitions for a specific food
+             compare foods/nutrient days long click
              streaks for x days in a row meeting goal x?
-             start food section
+             conversions for all available measurement units in util && add a combined food datum w/ measurements
+             add nutrient info to the expanded food item

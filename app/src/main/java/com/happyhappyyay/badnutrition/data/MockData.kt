@@ -7,7 +7,7 @@ import com.happyhappyyay.badnutrition.data.nutrient.NutrientValue
 import kotlin.random.Random
 
 class MockData {
-    private val foodList = arrayOf("chicken", "orange", "tiki masala", "potatoe", "short rib", "ice cream", "candy", "maple syrup", "onion", "potato chip")
+    private val foodList = arrayOf("chicken", "orange", "tika masala", "potatoe", "short rib", "ice cream", "candy", "maple syrup", "onion", "potato chip")
     val nutritionList = arrayOf("iron", "calcium", "manganese", "magnesium",
         "potassium", "sodium", "protein", "fat", "carbohydrates", "fiber",
         "sugar", "phosphorous", "iodine", "tocopherol", "calories")

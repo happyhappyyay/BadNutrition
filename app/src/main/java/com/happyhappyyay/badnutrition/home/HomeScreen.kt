@@ -21,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.Locale
@@ -48,6 +47,10 @@ enum class HomeType {
     Nutrition, Food
 }
 
+enum class HomeTime {
+    Day, Week, Month, Year
+}
+
 val adequateRangeColor = Color(0,255,0, 165)
 val deficientRangeColor = Color(255,0,0,192)
 val emptyBarColor = Color(201,201,201)
@@ -62,7 +65,8 @@ fun Home(viewModel: HomeViewModel){
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun HomeContent() {
-    val style by remember { mutableStateOf(HomeStyle.Standard)}
+    var style by remember { mutableStateOf(HomeStyle.Standard)}
+    var type by remember { mutableStateOf(HomeType.Food)}
     var dismiss by remember { mutableStateOf(true) }
     var date by remember { mutableStateOf("05/01/2022")}
 
@@ -78,7 +82,7 @@ fun HomeContent() {
         modifier = Modifier,
         appBar = { NutritionAppBar() },
         backLayerContent = { HomeBackLayer() },
-        frontLayerContent = { HomeFrontLayer(dismiss = { dismiss = !dismiss}, style = style) },
+        frontLayerContent = { HomeFrontLayer(dismiss = { dismiss = !dismiss}, setType = {type = it}, style = style, type = type) },
         gesturesEnabled = true
     ) {
     }
@@ -95,22 +99,26 @@ fun HomeBackLayer() {
 }
 
 @Composable
-fun HomeFrontLayer(dismiss: () -> Unit, style: HomeStyle, type: HomeType = HomeType.Nutrition) {
-    when(type) {
-        HomeType.Nutrition -> NutritionHome(style, dismiss)
-        else -> FoodHome(dismiss)
-    }
+fun HomeFrontLayer(dismiss: () -> Unit, setType: (HomeType) -> Unit, style: HomeStyle, type: HomeType) {
+    ScreenHeader(type = type, style = style, setType = setType, dismiss = dismiss)
 }
 @Composable
 fun FoodHome(dismiss: () -> Unit){
-
+    Foods()
 }
 
 @Composable
-fun NutritionHome(style: HomeStyle, dismiss: () -> Unit){
-    Column {
-        NutritionHeading(dismiss)
+fun ScreenHeader(type: HomeType, setType: (HomeType) -> Unit, dismiss: () -> Unit, style: HomeStyle){
+        when(type) {
+            HomeType.Food -> FoodScreen(setType,dismiss)
+            else -> NutritionHome(style, setType = setType, dismiss)
+        }
+}
+
+@Composable
+fun NutritionHome(style: HomeStyle, setType: (HomeType) -> Unit, dismiss: () -> Unit){
         LazyColumn (modifier = Modifier.padding(start = 8.dp, end = 8.dp)){
+            item { ScreenHeading(type = HomeType.Nutrition,setType, dismiss) }
             itemsIndexed(MockData().createNutritionList()) { ind, nutritionItem ->
                 if(ind == 0){
                     Chart(ChartTypes.Bar, MockData().nutrientChartPoints)
@@ -122,7 +130,6 @@ fun NutritionHome(style: HomeStyle, dismiss: () -> Unit){
                 }
             }
         }
-    }
 }
 
 @Composable
@@ -261,7 +268,7 @@ fun StandardNutritionCard(nutrient: Nutrient){
                         .height(14.dp)
                         .clip(CircleShape)
                         .background(emptyBarColor)
-                        .border(BorderStroke(1.dp, Color.Gray))
+                        .border(BorderStroke(1.dp, Color.Gray), shape = CircleShape)
                 ) {
                     Box(
                         modifier = Modifier
@@ -278,38 +285,36 @@ fun StandardNutritionCard(nutrient: Nutrient){
 }
 
 @Composable
-fun NutritionHeading(dismiss: () -> Unit) {
+fun ScreenHeading(type: HomeType, setType: (HomeType)-> Unit, dismiss: () -> Unit) {
     Surface(
         modifier = Modifier
             .height(45.dp)
             .fillMaxWidth(),
     ) {
-//        Box(Modifier.background(Brush.horizontalGradient(
-//            listOf(MaterialTheme.colors.background,MaterialTheme.colors.primaryVariant),
-//            0f,5000f
-//        )))
         Text(
             modifier = Modifier
                 .padding(bottom = 0.dp)
                 .height(40.dp),
-            text = "Nutrition",
+            text = if(type == HomeType.Food) "Food" else "Nutrition",
             textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.h5
+            style = MaterialTheme.typography.h4
         )
         Row (modifier = Modifier.padding(8.dp,0.dp,0.dp,0.dp)){
-            IconButton(onClick = { /*TODO*/ }, enabled = false) {
+            IconButton(onClick = { setType(HomeType.Nutrition)  },
+                enabled = type == HomeType.Food) {
                 Icon(
                     painter = painterResource(
                         id = R.drawable.round_list_alt_black_32,
                     ),
-                    "Nutrients"
+                    ""
                 )
             }
-            IconButton(onClick = { /*TODO*/ }) {
+            IconButton(onClick = { setType(HomeType.Food) },
+                enabled = type == HomeType.Nutrition) {
                 Icon(
                     painter = painterResource(
                         id = R.drawable.round_food_alt_black_32),
-                    "Foods"
+                    ""
                 )
             }
         }
