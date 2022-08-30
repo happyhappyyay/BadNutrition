@@ -1,16 +1,26 @@
-Name: nutrition story?
-Card View: fun form?-apple fills for goal %
-Categories for foods?
-LOGO? Inset Apple into book? or Sheet?
-
-Chart: https://github.com/ChristopherME/compose-blockchain/blob/master/app/src/main/java/com/christopherelias/blockchain/ui/components/LinearChart.kt
 Calendar: Locale Monday/Sunday first day
 typo at androidx.compose.ui.window AndroidDialog.android.kt Dialog
 
 In-Progress:
-             horizontal bar graph? Select nutrient items to change graph?
-             list all dates/partitions for a specific food
-             compare foods/nutrient days long click
-             streaks for x days in a row meeting goal x?
-             conversions for all available measurement units in util && add a combined food datum w/ measurements
-             add nutrient info to the expanded food item
+    Concepts:
+        Brand:  name - nutrition story?
+                LOGO? Inset Apple into book? or Sheet?
+
+        Card View: fun form?-apple fills for goal %
+        Categories for foods?
+        horizontal bar graph? Select nutrient items to change graph on food distribution?
+        list all dates/partitions for a specific food
+        compare foods/nutrient days long click
+        streaks for x days in a row meeting goal x?
+        conversions for all available measurement units in util && add a combined food datum w/ measurements
+        add multiple dates and date range picker to calendar
+           long click activation?
+        up arrow to quickly move to top of lists
+
+    Advised:
+            Mimic Food label order for macro/micro nutrients as default
+                similar breakdown for food -> nutrients
+            Add additional coloring for bars 0-25%R,25-75%Y,75-100%G
+
+    Current:
+            add nutrient info to the expanded food items

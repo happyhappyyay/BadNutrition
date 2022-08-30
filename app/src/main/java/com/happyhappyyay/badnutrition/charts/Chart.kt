@@ -18,7 +18,7 @@ import com.happyhappyyay.badnutrition.data.MockData
 import com.happyhappyyay.badnutrition.ui.theme.BadNutritionTheme
 
 @Composable
-fun Chart(type: ChartTypes, data: Array<Float>) {
+fun Chart(type: ChartTypes, data: Array<Float>, heading: String = "Summary") {
     Card(
         modifier = Modifier
             .padding(0.dp)
@@ -35,7 +35,7 @@ fun Chart(type: ChartTypes, data: Array<Float>) {
                 text = if(type == ChartTypes.Line)
                         if(data.size < 32) "Nutrient X through Junio"
                         else "Nutrient X through 2021"
-                    else "Summary of Junio",
+                    else heading,
                 textAlign = TextAlign.Center)
             when(type){
                 ChartTypes.Bar -> ChartBase(data = MockData().nutrientItems, nutrients = MockData().nutritionList)

@@ -1,5 +1,6 @@
 package com.happyhappyyay.badnutrition.data
 
+import android.annotation.SuppressLint
 import android.os.Build
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -8,6 +9,7 @@ import com.happyhappyyay.badnutrition.data.nutrient.NutrientValue
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
@@ -34,14 +36,3 @@ fun currentDateInMilliseconds(): Long{
     }
 }
 
-fun currentDayString(): String {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        Instant.ofEpochMilli(System.currentTimeMillis())
-            .atZone(ZoneId.systemDefault())
-            .toLocalDate()
-            .format(DateTimeFormatter.ISO_DATE)
-
-    } else {
-        SimpleDateFormat("yyyyMMMMdd", Locale.US).format(Calendar.getInstance())
-    }
-}

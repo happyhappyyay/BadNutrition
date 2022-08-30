@@ -1,21 +1,26 @@
 package com.happyhappyyay.badnutrition.calendar
 
-import android.annotation.SuppressLint
 import android.os.Build
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.ArrowForward
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.happyhappyyay.badnutrition.R
+import com.happyhappyyay.badnutrition.util.currentDayString
+import com.happyhappyyay.badnutrition.util.monthNumToName
 import com.happyhappyyay.badnutrition.ui.theme.BadNutritionTheme
 import java.text.SimpleDateFormat
 import java.time.LocalDate
@@ -29,42 +34,70 @@ val DAYS = arrayOf(3,8,14,19,28,31)
 val DAYS_OF_WEEK = arrayOf("SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY","FRIDAY", "SATURDAY")
 
 @Composable
-fun Calendar(date: String, setDate: (String) -> Unit) {
-    var currentMonthYear by remember { mutableStateOf(date)}
+fun Calendar(
+    date: String,
+    setDate: (String) -> Unit
+) {
+    var curDateStr by rememberSaveable { mutableStateOf(date)}
     Surface(
-        shape = RoundedCornerShape(8.dp),
+        shape = MaterialTheme.shapes.medium,
         color = MaterialTheme.colors.primaryVariant,
-        elevation = 4.dp
+        elevation = 4.dp,
+        border = BorderStroke(1.dp,MaterialTheme.colors.primaryVariant)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            CalendarHeader(currentMonthYear) { currentMonthYear = it }
-            CalendarDays(recordedDays = DAYS, endOfMonth(currentMonthYear), firstDayOfMonth(currentMonthYear)) {
-                val newDate = "${currentMonthYear.slice(0..1)}/$it/${currentMonthYear.slice(6..9)}"
+            CalendarHeader(curDateStr, {curDateStr = if(it) date else currentDayString()}) { curDateStr = it }
+            CalendarDays(
+                recordedDays = DAYS,
+                curDateStr,
+                date
+            ) {
+                val newDate = curDateStr.slice(0..7) + it
                 setDate(
                     newDate
                 )
             }
+
         }
     }
 }
 
 @Composable
-fun CalendarDays(recordedDays: Array<Int>, totalDays: Int, firstDay: Int, setDate: (String) -> Unit) {
-    var dataPointer = 0
-    var dateOfMonth = 0 - firstDay;
+fun CalendarDays(
+    recordedDays: Array<Int>,
+    curDateStr: String,
+    date: String,
+    setDate: (String) -> Unit
+) {
+    val totalDays = endOfMonth(curDateStr)
+    val firstDay = firstDayOfMonth(curDateStr)
+    val today = currentDayString()
+    var dataInd = 0
+    var dateOfMonth = 0 - firstDay
     Column (Modifier.padding(start = 4.dp, end = 4.dp, bottom = 4.dp)){
         for(i in 0..5) {
-            Row(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
                 for (j in SUN_DAYS.indices) {
                     val calendarDay = if(dateOfMonth in 1..totalDays) dateOfMonth else -1
-                    dateOfMonth++;
+                    val hasAdZero = if(calendarDay > 0) calendarDay < 10 else false
+                    val correctedDay = "${if(hasAdZero)"0" else ""}${calendarDay}"
+                    dateOfMonth++
                     CalendarDay(
                         modifier = Modifier.weight(1f),
                         number = calendarDay,
+                        isToday =
+                        curDateStr.slice(0..6) == today.slice(0..6)
+                                && correctedDay == today.slice(8.. 9),
+                        isSelected =
+                        curDateStr.slice(0..6) == date.slice(0..6)
+                                && correctedDay == date.slice(8.. 9),
                         hasData =
-                            if(dataPointer < recordedDays.size &&
-                                dateOfMonth == recordedDays[dataPointer]){
-                                dataPointer++
+                            if(dataInd < recordedDays.size &&
+                                dateOfMonth == recordedDays[dataInd]){
+                                dataInd++
                                 true
                             }
                             else{
@@ -72,13 +105,7 @@ fun CalendarDays(recordedDays: Array<Int>, totalDays: Int, firstDay: Int, setDat
                             },
                         moveTo = {
                             if(calendarDay > 0){
-                                val day = if(calendarDay > 9){
-                                    "$calendarDay"
-                                }
-                                else{
-                                    "0$calendarDay"
-                                }
-                                setDate(day)
+                                setDate(correctedDay)
                             }
                         }
                         )
@@ -90,14 +117,22 @@ fun CalendarDays(recordedDays: Array<Int>, totalDays: Int, firstDay: Int, setDat
 }
 
 @Composable
-fun CalendarDay(modifier: Modifier, number: Int, hasData: Boolean, moveTo: () -> Unit) {
+fun CalendarDay(
+    modifier: Modifier = Modifier,
+    number: Int,
+    hasData: Boolean,
+    isSelected: Boolean = false,
+    moveTo: () -> Unit,
+    isToday: Boolean
+) {
     OutlinedButton(
         onClick = moveTo,
         modifier = modifier.height(40.dp),
+        enabled = !isSelected,
         shape = MaterialTheme.shapes.small,
-        border = BorderStroke(1.dp, MaterialTheme.colors.primary),
-        colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.background),
-        contentPadding = PaddingValues(start = 0.dp, end = 8.dp, top = 0.dp, bottom = 0.dp)
+        colors = ButtonDefaults.buttonColors(
+            backgroundColor = MaterialTheme.colors.background),
+        contentPadding = PaddingValues(end = 8.dp)
     ){
         Text(
             modifier = Modifier
@@ -106,37 +141,35 @@ fun CalendarDay(modifier: Modifier, number: Int, hasData: Boolean, moveTo: () ->
             text = if(number != -1) "$number" else "",
             textAlign = TextAlign.End,
             fontWeight = if(hasData)FontWeight.Bold else FontWeight.Normal,
-            color = if(hasData)MaterialTheme.colors.secondary else MaterialTheme.colors.onBackground
+            color = if(hasData)MaterialTheme.colors.secondary else MaterialTheme.colors.onBackground,
+            textDecoration = if(isToday)TextDecoration.Underline else TextDecoration.None
         )
     }
 }
 
 @Composable
-fun CalendarHeader(date: String, setCurrentMonth:(String) -> Unit) {
-    val monthString = date.slice(0.. 1)
-    var monthVal = monthString.toInt()
-    val month = when(monthString){
-        "01" -> "January"
-        "02" -> "February"
-        "03" -> "March"
-        "04" -> "April"
-        "05" -> "May"
-        "06" -> "June"
-        "07" -> "July"
-        "08" -> "August"
-        "09" -> "September"
-        "10" -> "October"
-        "11" -> "November"
-        "12" -> "December"
-        else -> "January"
-    }
+fun CalendarHeader(
+    date: String,
+    setCurDate: (selected: Boolean) -> Unit,
+    setCurrentMonth:(String) -> Unit
+) {
+    val monthStr = date.slice(5.. 6)
+    var monthVal = monthStr.toInt()
+    val month = monthNumToName(monthStr)
+    val yearStr = date.slice(0.. 3)
     Column{
-        Surface(color = MaterialTheme.colors.primary) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-            )
-            {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        )
+        {
+            Surface(
+                modifier = Modifier.padding(4.dp,4.dp),
+                color = MaterialTheme.colors.primary,
+                elevation = 4.dp,
+                shape = MaterialTheme.shapes.medium,
+            ) {
                 IconButton(onClick = {
                     var newDate:String
                     if(--monthVal >= 1){
@@ -145,17 +178,48 @@ fun CalendarHeader(date: String, setCurrentMonth:(String) -> Unit) {
                         } else{
                             "0$monthVal"
                         }
-                        newDate += date.slice(2..9)
+                        newDate = "${date.slice(0.. 3)}-${newDate}-${date.slice(8..9)}"
                     }
                     else{
-                        val year = date.slice(6.. 9).toInt().minus(1)
-                        newDate = "01/01/${year}"
+                        val year = date.slice(0.. 3).toInt().minus(1)
+                        newDate = "${year}-12-01"
                     }
                     setCurrentMonth(newDate) }) {
                     Icon(Icons.Rounded.ArrowBack, null)
                 }
+            }
+            Surface(
+                modifier = Modifier
+                    .padding(0.dp, 4.dp)
+                    .weight(2F),
+                color = MaterialTheme.colors.primary,
+                shape = MaterialTheme.shapes.medium,
 
-                CalendarHeaderTitle(month = month)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = { setCurDate(true) }) {
+                        Icon(
+                            painter = painterResource(
+                                id = R.drawable.round_today_alt_black_24
+                            ),
+                            ""
+                        )
+                    }
+                    CalendarHeaderTitle(month = month, year = yearStr)
+                    IconButton(onClick = { setCurDate(false) }) {
+                        Icon(Icons.Default.Home, "")
+                    }
+                }
+            }
+            Surface(
+                modifier = Modifier.padding(4.dp,4.dp),
+                color = MaterialTheme.colors.primary,
+                elevation = 4.dp,
+                shape = MaterialTheme.shapes.medium,
+            ) {
                 IconButton(onClick = {
                     var newDate:String
                     if(++monthVal <= 12){
@@ -164,47 +228,64 @@ fun CalendarHeader(date: String, setCurrentMonth:(String) -> Unit) {
                         } else{
                             "0$monthVal"
                         }
-                        newDate += date.slice(2..9)
+                        newDate = "${date.slice(0.. 3)}-${newDate}-${date.slice(8..9)}"
                     }
                     else{
-                        val year = date.slice(6.. 9).toInt().plus(1)
-                        newDate = "01/01/${year}"
+                        val year = date.slice(0.. 3).toInt().plus(1)
+                        newDate = "${year}-01-01"
                     }
-                    setCurrentMonth(newDate) }) {
+                    setCurrentMonth(newDate)
+                },
+                ) {
                     Icon(Icons.Rounded.ArrowForward, null)
                 }
             }
-            Text(
-                modifier = Modifier.padding(end = 4.dp).fillMaxWidth(),
-                text = date.slice(6..9),
-                textAlign = TextAlign.End,
-                style = MaterialTheme.typography.h6
-            )
         }
         CalendarHeaderDays(SUN_DAYS)
     }
 }
 
 @Composable
-fun CalendarHeaderTitle(month :String) {
-    Text(
-        text = month,
-        style = MaterialTheme.typography.h4
-    )
+fun CalendarHeaderTitle(month :String, year: String) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = month,
+            style = MaterialTheme.typography.h6
+        )
+        Text(
+            text = year,
+        )
+    }
+
 }
 
 @Composable
 fun CalendarHeaderDays(days: Array<String>) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(4.dp, 0.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         days.forEach { day ->
+            Surface(
+                modifier = Modifier
+                    .padding(start = 1.dp, end = 1.dp, top = 4.dp, bottom = 0.dp)
+                    .weight(1F),
+                color = MaterialTheme.colors.primary,
+                shape = MaterialTheme.shapes.small
+            ) {
                 Text(
-                    modifier = Modifier.padding(start = 8.dp, end = 8.dp).weight(1f),
+                    modifier = Modifier
+                        .padding(start = 8.dp, end = 8.dp)
+                        .weight(1f),
                     text = day,
                     textAlign = TextAlign.Center,
-                    textDecoration = TextDecoration.Underline,
+                    fontWeight = FontWeight.Bold
                 )
+            }
         }
     }
 }
@@ -221,7 +302,7 @@ fun PreviewCalendarHeaderDays(){
 @Composable
 fun PreviewCalendarHeader(){
     BadNutritionTheme{
-        CalendarHeader("06/05/2009", setCurrentMonth = { })
+        CalendarHeader("2009-03-01", setCurDate = { }, setCurrentMonth = { })
     }
 }
 
@@ -229,7 +310,9 @@ fun PreviewCalendarHeader(){
 @Composable
 fun PreviewCalendarDay(){
     BadNutritionTheme{
-        CalendarDay(Modifier,1,true, moveTo = {})
+        CalendarDay(
+            Modifier, 1, true, moveTo = {}, isToday = true
+        )
     }
 }
 
@@ -237,27 +320,31 @@ fun PreviewCalendarDay(){
 @Composable
 fun PreviewCalendarDays(){
     BadNutritionTheme{
-        CalendarDays(recordedDays = DAYS, endOfMonth("07/05/2009"), firstDayOfMonth("07/05/2009"), setDate = {})
+        CalendarDays(
+            recordedDays = DAYS,
+            "2009-07-05",
+            "2009-07-06",
+            setDate = {},
+        )
     }
 }
 
-@SuppressLint("NewApi")
 @Preview
 @Composable
 fun PreviewCalendar(){
     BadNutritionTheme {
-        Calendar(date = "06/05/2009", setDate = {})
+        Calendar(date = "2009-06-18", setDate = {})
     }
 }
 
 fun endOfMonth(dateString: String): Int {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        val format = DateTimeFormatter.ofPattern("MM/dd/yyyy")
+        val format = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         val date = LocalDate.parse(dateString, format)
         date.with(TemporalAdjusters.lastDayOfMonth()).dayOfMonth
     } else {
         val cal = Calendar.getInstance()
-        val format = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+        val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         cal.time = format.parse(dateString) as Date
         cal.getActualMaximum(Calendar.DATE)
     }
@@ -265,10 +352,9 @@ fun endOfMonth(dateString: String): Int {
 
 fun firstDayOfMonth(dateString: String): Int {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        val format = DateTimeFormatter.ofPattern("MM/d/yyyy")
+        val format = DateTimeFormatter.ofPattern("yyyy-MM-dd")
         val date = LocalDate.parse(dateString, format)
         return when(date.with(TemporalAdjusters.firstDayOfMonth()).dayOfWeek.toString()){
-            "SUNDAY" -> 0
             "MONDAY" -> 1
             "TUESDAY" -> 2
             "WEDNESDAY" -> 3
@@ -280,7 +366,7 @@ fun firstDayOfMonth(dateString: String): Int {
     }
     else{
         val cal = Calendar.getInstance()
-        val format = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
+        val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         cal.time = format.parse(dateString) as Date
         cal.set(Calendar.DAY_OF_MONTH, 1)
         return cal.get(Calendar.DAY_OF_WEEK)

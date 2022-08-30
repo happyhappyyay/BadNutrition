@@ -1,5 +1,6 @@
 package com.happyhappyyay.badnutrition.home
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
@@ -7,6 +8,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,10 +19,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.consumeAllChanges
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.Locale
@@ -35,9 +40,12 @@ import com.happyhappyyay.badnutrition.data.MockData
 import com.happyhappyyay.badnutrition.data.nutrient.Nutrient
 import com.happyhappyyay.badnutrition.charts.Chart
 import com.happyhappyyay.badnutrition.charts.ChartTypes
+import com.happyhappyyay.badnutrition.util.adjustDate
+import com.happyhappyyay.badnutrition.util.currentDayString
 import com.happyhappyyay.badnutrition.day.TimeSpanUnit
 import com.happyhappyyay.badnutrition.ui.theme.BadNutritionTheme
 import com.happyhappyyay.badnutrition.ui.theme.Shapes
+import kotlin.math.abs
 
 enum class HomeStyle {
     Simple, Standard, Complex
@@ -66,11 +74,11 @@ fun Home(viewModel: HomeViewModel){
 @Composable
 fun HomeContent() {
     var style by remember { mutableStateOf(HomeStyle.Standard)}
-    var type by remember { mutableStateOf(HomeType.Food)}
-    var dismiss by remember { mutableStateOf(true) }
-    var date by remember { mutableStateOf("05/01/2022")}
+    var type by remember { mutableStateOf(HomeType.Nutrition)}
+    var dismiss by rememberSaveable { mutableStateOf(true) }
+    var date by rememberSaveable { mutableStateOf(currentDayString())}
 
-    if(!dismiss) {
+    AnimatedVisibility(visible = !dismiss) {
         Dialog(onDismissRequest = { dismiss = true }) {
             Calendar(date = date, setDate = {
                 date = it
@@ -82,7 +90,7 @@ fun HomeContent() {
         modifier = Modifier,
         appBar = { NutritionAppBar() },
         backLayerContent = { HomeBackLayer() },
-        frontLayerContent = { HomeFrontLayer(dismiss = { dismiss = !dismiss}, setType = {type = it}, style = style, type = type) },
+        frontLayerContent = { HomeFrontLayer(dismiss = { dismiss = !dismiss}, setType = {type = it}, style = style, type = type, date = date, setDate = {date = it}) },
         gesturesEnabled = true
     ) {
     }
@@ -99,8 +107,33 @@ fun HomeBackLayer() {
 }
 
 @Composable
-fun HomeFrontLayer(dismiss: () -> Unit, setType: (HomeType) -> Unit, style: HomeStyle, type: HomeType) {
-    ScreenHeader(type = type, style = style, setType = setType, dismiss = dismiss)
+fun HomeFrontLayer(
+    dismiss: () -> Unit,
+    setType: (HomeType) -> Unit,
+    style: HomeStyle,
+    type: HomeType,
+    setDate: (String) -> Unit,
+    date: String
+) {
+    var direction = 0
+    var nDate by remember { mutableStateOf(date)}
+
+    Box(modifier = Modifier.pointerInput(Unit){
+        detectDragGestures (
+            onDrag = { change, dragAmount ->
+            change.consumeAllChanges()
+            val (x,y) = dragAmount
+            if(abs(x) > abs(y)){
+                direction = if(x > 0) -1 else 1
+            }
+        },
+            onDragEnd = {
+                nDate = adjustDate(date = nDate, direction)
+                setDate(nDate)
+        })
+    }) {
+        ScreenHeader(type = type, style = style, date = date, setType = setType, dismiss = dismiss)
+    }
 }
 @Composable
 fun FoodHome(dismiss: () -> Unit){
@@ -108,20 +141,26 @@ fun FoodHome(dismiss: () -> Unit){
 }
 
 @Composable
-fun ScreenHeader(type: HomeType, setType: (HomeType) -> Unit, dismiss: () -> Unit, style: HomeStyle){
+fun ScreenHeader(
+    type: HomeType,
+    setType: (HomeType) -> Unit,
+    dismiss: () -> Unit,
+    style: HomeStyle,
+    date: String
+){
         when(type) {
-            HomeType.Food -> FoodScreen(setType,dismiss)
-            else -> NutritionHome(style, setType = setType, dismiss)
+            HomeType.Food -> FoodScreen(date, setType,dismiss)
+            else -> NutritionHome(date, style, setType = setType, dismiss)
         }
 }
 
 @Composable
-fun NutritionHome(style: HomeStyle, setType: (HomeType) -> Unit, dismiss: () -> Unit){
+fun NutritionHome(date: String, style: HomeStyle, setType: (HomeType) -> Unit, dismiss: () -> Unit){
         LazyColumn (modifier = Modifier.padding(start = 8.dp, end = 8.dp)){
             item { ScreenHeading(type = HomeType.Nutrition,setType, dismiss) }
             itemsIndexed(MockData().createNutritionList()) { ind, nutritionItem ->
                 if(ind == 0){
-                    Chart(ChartTypes.Bar, MockData().nutrientChartPoints)
+                    Chart(ChartTypes.Bar, MockData().nutrientChartPoints, "Summary of $date")
                 }
                 when(style) {
                     HomeStyle.Simple -> SimpleNutritionCard(nutritionItem)
