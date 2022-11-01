@@ -10,4 +10,8 @@ val Shapes = Shapes(
     large = RoundedCornerShape(0.dp),
 )
 
-val halfRoundedShape = RoundedCornerShape(10.dp,0.dp,0.dp,10.dp)
+val halfRoundShapeRight = RoundedCornerShape(0.dp,10.dp)
+val halfRoundedShapeLeft = RoundedCornerShape(10.dp,0.dp,0.dp,10.dp)
+val halfRoundedShapeRightDeep = RoundedCornerShape(0.dp,20.dp,20.dp,0.dp)
+val halfRoundedShapeLeftDeep = RoundedCornerShape(20.dp,0.dp,0.dp,20.dp)
+val binderTabShapeRight = RoundedCornerShape(0.dp,20.dp)

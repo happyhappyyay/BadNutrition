@@ -1,9 +1,12 @@
 package com.happyhappyyay.badnutrition.home
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
@@ -20,15 +23,41 @@ import com.happyhappyyay.badnutrition.data.nutrient.Nutrient
 import com.happyhappyyay.badnutrition.data.nutrient.calcNutrientValPercent
 import com.happyhappyyay.badnutrition.ui.theme.BadNutritionTheme
 import com.happyhappyyay.badnutrition.ui.theme.Shapes
-import com.happyhappyyay.badnutrition.ui.theme.halfRoundedShape
+import com.happyhappyyay.badnutrition.ui.theme.halfRoundedShapeLeft
+import com.happyhappyyay.badnutrition.util.ScrollButton
+import kotlinx.coroutines.launch
 
 @Composable
 fun FoodScreen(date: String, setType: (HomeType) -> Unit, dismiss: () -> Unit){
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+    val showButton by remember{
+        derivedStateOf {
+            listState.firstVisibleItemIndex > 0
+        }
+    }
     val strings = arrayOf("Breakfast", "Lunch", "Dinner")
-    LazyColumn(modifier = Modifier.padding(start = 8.dp,end = 8.dp)){
+    LazyColumn(
+        state = listState,
+        modifier = Modifier.padding(start = 8.dp,end = 8.dp)
+    )
+    {
         item { ScreenHeading(type = HomeType.Food, setType,dismiss) }
         itemsIndexed(strings) { i,_ ->
             FoodPartition(strings[i])
+        }
+        item{
+            Spacer(modifier = Modifier
+                .fillMaxWidth()
+                .height(64.dp))
+        }
+    }
+    AnimatedVisibility(visible = showButton
+    ) {
+        ScrollButton {
+            coroutineScope.launch {
+                listState.animateScrollToItem(0)
+            }
         }
     }
 }
@@ -41,7 +70,7 @@ fun FoodPartition(title: String = "Breakfast"){
             modifier = Modifier
                 .padding(0.dp,0.dp,0.dp,0.dp),
             elevation = 8.dp,
-            shape = if(isExpanded) halfRoundedShape else Shapes.medium
+            shape = if(isExpanded) halfRoundedShapeLeft else Shapes.medium
         ){
             IconButton(onClick = { isExpanded = !isExpanded }) {
                 Row(modifier = Modifier
@@ -65,6 +94,7 @@ fun FoodPartition(title: String = "Breakfast"){
         AnimatedVisibility(visible = isExpanded) {
             Foods()
         }
+
     }
 }
 

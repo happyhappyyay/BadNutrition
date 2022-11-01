@@ -38,7 +38,7 @@ fun Chart(type: ChartTypes, data: Array<Float>, heading: String = "Summary") {
                     else heading,
                 textAlign = TextAlign.Center)
             when(type){
-                ChartTypes.Bar -> ChartBase(data = MockData().nutrientItems, nutrients = MockData().nutritionList)
+                ChartTypes.Bar -> ChartBase(data = data, nutrients = MockData().nutritionList)
                 ChartTypes.Line -> ChartBase(data = data, nutrients = null)
             }
 

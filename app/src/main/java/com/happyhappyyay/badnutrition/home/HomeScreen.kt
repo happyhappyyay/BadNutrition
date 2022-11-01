@@ -1,9 +1,13 @@
 package com.happyhappyyay.badnutrition.home
 
+import android.graphics.drawable.shapes.RoundRectShape
+import android.graphics.drawable.shapes.Shape
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -13,6 +17,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -24,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.pointer.consumeAllChanges
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
@@ -33,6 +39,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.happyhappyyay.badnutrition.R
 import com.happyhappyyay.badnutrition.calendar.Calendar
@@ -43,8 +50,9 @@ import com.happyhappyyay.badnutrition.charts.ChartTypes
 import com.happyhappyyay.badnutrition.util.adjustDate
 import com.happyhappyyay.badnutrition.util.currentDayString
 import com.happyhappyyay.badnutrition.day.TimeSpanUnit
-import com.happyhappyyay.badnutrition.ui.theme.BadNutritionTheme
-import com.happyhappyyay.badnutrition.ui.theme.Shapes
+import com.happyhappyyay.badnutrition.ui.theme.*
+import com.happyhappyyay.badnutrition.util.ScrollButton
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 enum class HomeStyle {
@@ -62,6 +70,8 @@ enum class HomeTime {
 val adequateRangeColor = Color(0,255,0, 165)
 val deficientRangeColor = Color(255,0,0,192)
 val emptyBarColor = Color(201,201,201)
+
+const val horGestureThreshold = 50
 
 @Composable
 fun Home(viewModel: HomeViewModel){
@@ -123,7 +133,7 @@ fun HomeFrontLayer(
             onDrag = { change, dragAmount ->
             change.consumeAllChanges()
             val (x,y) = dragAmount
-            if(abs(x) > abs(y)){
+            if(abs(x) - horGestureThreshold > abs(y)){
                 direction = if(x > 0) -1 else 1
             }
         },
@@ -156,19 +166,46 @@ fun ScreenHeader(
 
 @Composable
 fun NutritionHome(date: String, style: HomeStyle, setType: (HomeType) -> Unit, dismiss: () -> Unit){
-        LazyColumn (modifier = Modifier.padding(start = 8.dp, end = 8.dp)){
-            item { ScreenHeading(type = HomeType.Nutrition,setType, dismiss) }
-            itemsIndexed(MockData().createNutritionList()) { ind, nutritionItem ->
-                if(ind == 0){
-                    Chart(ChartTypes.Bar, MockData().nutrientChartPoints, "Summary of $date")
-                }
-                when(style) {
-                    HomeStyle.Simple -> SimpleNutritionCard(nutritionItem)
-                    HomeStyle.Standard -> StandardNutritionCard(nutritionItem)
-                    HomeStyle.Complex -> ComplexNutritionCard(nutritionItem)
-                }
+    val list = MockData().createNutritionList()
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+    val showButton by remember{
+        derivedStateOf {
+            listState.firstVisibleItemIndex > 0
+        }
+    }
+    LazyColumn (
+        modifier = Modifier
+            .padding(start = 8.dp, end = 8.dp),
+        state = listState
+    ){
+        item { ScreenHeading(type = HomeType.Nutrition,setType, dismiss) }
+        itemsIndexed(list) { ind, nutritionItem ->
+            if(ind == 0){
+//                    Chart(ChartTypes.Line, MockData().nutrientChartPoints, "Summary of $date")
+                Chart(ChartTypes.Bar, MockData().pointsFromNutrients(list), "Summary of $date")
+            }
+            when(style) {
+                HomeStyle.Simple -> SimpleNutritionCard(nutritionItem)
+                HomeStyle.Standard -> StandardNutritionCard(nutritionItem, GraphBarColors[ind])
+                HomeStyle.Complex -> ComplexNutritionCard(nutritionItem)
             }
         }
+        item{
+            Spacer(modifier = Modifier
+                .fillMaxWidth()
+                .height(64.dp))
+        }
+    }
+    AnimatedVisibility(visible = showButton
+    ) {
+        ScrollButton {
+            coroutineScope.launch {
+                listState.animateScrollToItem(0)
+            }
+        }
+    }
+
 }
 
 @Composable
@@ -248,7 +285,7 @@ fun ComplexNutritionCard(nutrient: Nutrient){
 }
 
 @Composable
-fun StandardNutritionCard(nutrient: Nutrient){
+fun StandardNutritionCard(nutrient: Nutrient, color: Color){
     val percentage = if(nutrient.goal.min > 0)
             Math.round((nutrient.value/(nutrient.goal.min * 1F))*100)
         else
@@ -268,28 +305,59 @@ fun StandardNutritionCard(nutrient: Nutrient){
             .padding(8.dp)
             .wrapContentHeight(),
         elevation = 10.dp,
+        backgroundColor = Color(240,240,240)
     ) {
-        Column  {
-            Row (Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(
-                    modifier = Modifier.padding(8.dp,8.dp,0.dp,0.dp),
-                    text = label,
-                    style = MaterialTheme.typography.h5,
-                    textAlign = TextAlign.Center
-                )
-                Text(
-                    text = "$zero$percentage%",
-                    modifier = Modifier.padding(top = 8.dp, end = 8.dp),
-                    style = MaterialTheme.typography.h5
-                    )
+        Column {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = Shapes.large,
+                color = color,
+                elevation = 2.dp
+            ) {
+                Spacer(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(32.dp))
             }
-            Column (modifier = Modifier.padding(8.dp, 0.dp,8.dp,8.dp)) {
+                Row (Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween) {
+//                        Surface(
+//                            modifier = Modifier.fillMaxWidth(.5f),
+//                            shape = RectangleShape,
+//                            color = color,
+//                            elevation = 2.dp
+//                        ) {
+                    Text(
+                        modifier = Modifier
+                            .padding(8.dp, 0.dp, 0.dp, 0.dp)
+                            .fillMaxWidth(.5F),
+                        text = label,
+                        style = MaterialTheme.typography.h5,
+                        textAlign = TextAlign.Left
+                    )
+//                        }
+//                    Surface(
+//                        modifier = Modifier.weight(1.25f),
+//                        shape = halfRoundedShapeLeftDeep,
+//                        color = color,
+//                        elevation = 4.dp
+//                    ) {
+                        Text(
+                            text = "$zero$percentage%",
+                            modifier = Modifier.padding(top = 0.dp, end = 8.dp),
+                            style = MaterialTheme.typography.h5,
+                            textAlign = TextAlign.Right
+                        )
+//                    }
+            }
+
+            Column {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween) {
+                    horizontalArrangement = Arrangement.SpaceBetween
+                )
+                {
                     Text(
-                        modifier = Modifier.padding(bottom = 8.dp),
+                        modifier = Modifier.padding(8.dp,0.dp,0.dp,0.dp),
                         text = when {
                             nutrient.goal.max < 0 -> "${nutrient.goal.min}${nutrient.measurement} min"
                             nutrient.goal.min <= 0 -> "${nutrient.goal.max}${nutrient.measurement} max"
@@ -297,27 +365,42 @@ fun StandardNutritionCard(nutrient: Nutrient){
                         }
 
                     )
-                    Text(
-                        text = "${nutrient.value}${nutrient.measurement}"
-                    )
+//                    Surface(
+//                        modifier = Modifier.fillMaxWidth(.8f),
+//                        shape = halfRoundedShapeLeftDeep,
+//                        color = color
+//                    ) {
+                        Text(
+                            modifier = Modifier.padding(end = 8.dp),
+                            text = "${nutrient.value}${nutrient.measurement}",
+                            textAlign = TextAlign.Right
+                        )
+//                    }
                 }
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth(.9F)
-                        .height(14.dp)
-                        .clip(CircleShape)
-                        .background(emptyBarColor)
-                        .border(BorderStroke(1.dp, Color.Gray), shape = CircleShape)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .padding(0.dp, 1.dp)
-                            .fillMaxWidth(maxWidth * .994F)
-                            .height(12.dp)
-                            .clip(CircleShape)
-                            .background(if (!overMax && percentage > 50) adequateRangeColor else deficientRangeColor)
-                    )
-                }
+                    Row(horizontalArrangement = Arrangement.SpaceBetween) {
+                        Box(
+                            modifier = Modifier
+                                .padding(8.dp, 8.dp, 16.dp, 8.dp)
+                                .weight(.95f)
+                                .height(14.dp)
+                                .clip(CircleShape)
+                                .background(emptyBarColor)
+                                .border(BorderStroke(1.dp, Color.Gray), shape = CircleShape)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .padding(0.dp, 1.dp)
+                                    .fillMaxWidth(maxWidth * .989F)
+                                    .height(12.dp)
+                                    .clip(CircleShape)
+                                    .background(if (!overMax && percentage > 50) adequateRangeColor else deficientRangeColor)
+                            )
+                        }
+                        Spacer(modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(.05f)
+                            .padding(8.dp))
+                    }
             }
         }
     }
@@ -452,7 +535,7 @@ fun PreviewHome() {
 //@Composable
 //fun PreviewSimpleCard(){
 //    BadNutritionTheme {
-//        SimpleNutritionCard(label = "Deeeeeeeeeez Nutzzzzzzz")
+//        SimpleNutritionCard(label = "Nutzzzzzz")
 //    }
 //}
 
@@ -460,7 +543,7 @@ fun PreviewHome() {
 @Composable
 fun PreviewStandardCard() {
     BadNutritionTheme {
-        StandardNutritionCard(MockData().nutrientExample())
+        StandardNutritionCard(MockData().nutrientExample(), Color.Cyan)
     }
 }
 //

@@ -17,9 +17,9 @@ class MockData {
             nutrients.add(
                 Nutrient(
                     name = item,
-                    value = Random.nextInt(0,600),
+                    value = Random.nextInt(0,100),
                     measurement = "Kg",
-                    goal = Goal(Random.nextInt(-50,500), Random.nextInt(-100,1000))
+                    goal = Goal(Random.nextInt(-1,100), Random.nextInt(-1,100))
                 )
             )
         }
@@ -43,6 +43,14 @@ class MockData {
             measurement = "mg",
             goal = Goal(Random.nextInt(150,1000))
         )
+    }
+
+    fun pointsFromNutrients(list:ArrayList<Nutrient>): Array<Float> {
+        val arr = Array(list.size){ i ->
+            val nutriPoint = list[i].value/(list[i].goal.min * 1F) * 100
+            if(nutriPoint > 100) 110F else nutriPoint
+            }
+        return arr
     }
 
     val nutrientChartPoints = arrayOf(50F,100F,0F,22F,33F,37F,30F,75F,72F,88F,120F,20F,39F,89F,100F,82F,78F,85F,82F,99F,92F,44F,22F,33F,37F,30F,75F,72F,88F,19F,20F)

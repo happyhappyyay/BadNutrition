@@ -16,6 +16,8 @@ In-Progress:
         add multiple dates and date range picker to calendar
            long click activation?
         up arrow to quickly move to top of lists
+        matching colors to graph bars - design of color integration styles.jpg in ./Pictures
+        modularize graph components
 
     Advised:
             Mimic Food label order for macro/micro nutrients as default

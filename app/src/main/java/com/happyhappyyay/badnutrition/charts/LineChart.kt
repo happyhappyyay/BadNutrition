@@ -2,26 +2,33 @@ package com.happyhappyyay.badnutrition.charts
 
 import android.graphics.Paint
 import android.graphics.Typeface
+import androidx.compose.material.MaterialTheme
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import com.happyhappyyay.badnutrition.ui.theme.Purple200Alpha50
 
 val months = arrayOf("January", "February", "March", "April", "May", "June", "July", "August",
 "September", "October", "November", "December")
 
-fun DrawScope.lineChart(points: Array<Float>, lineColors:Array<Color>,
-                        chartBounds: Array<Float>, paint: Paint
+fun DrawScope.lineChart(
+    points: Array<Float>,
+    lineColors:Array<Color>,
+    paint: Paint
 ) {
+    val lineGuideColor1 = Color.Black
+    val lineGuideColor2 = Purple200Alpha50
     val axesColor = lineColors[0]
     val lineColor = lineColors[1]
     val pointColor = lineColors[2]
     val averageColor = lineColors[3]
     val chartMargin = if(size.height < size.width) size.height/35 else size.width/35
-    val topValueOfChart = chartBounds[0]
-    val bottomValueOfChart = chartBounds[1] - chartBounds[0]
-    val yAxisLinePos = chartBounds[1]
+    val yAxisLinePos = size.height - 2.25F * chartMargin
+    val topValueOfChart = size.height / 5.25F
+    val bottomValueOfChart = yAxisLinePos - topValueOfChart
     var date = 1
     var average = 0F
     val offsetPoints = mutableListOf<Offset>()
@@ -29,6 +36,36 @@ fun DrawScope.lineChart(points: Array<Float>, lineColors:Array<Color>,
     val month = points.size/12 + 1
     val xOffset =
         if (points.isNotEmpty()) ((size.width - 4.3F * chartMargin) / points.size) else size.width
+    val yAxisLines = arrayOf(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
+    yAxisLines.forEachIndexed { ind, y ->
+        val yCord =
+            bottomValueOfChart - (bottomValueOfChart * ((y * 1F) / 100)) + topValueOfChart
+        val guideLineEnd =
+            bottomValueOfChart - (bottomValueOfChart * (((y+10) * 1F) / 100)) + topValueOfChart
+        if(ind > 0) {
+//                    PUT ALL THIS ONTO THE ACTUAL CHARTS
+            drawRect(
+                if (ind % 2 == 1) lineGuideColor1 else lineGuideColor2,
+                Offset(x = 3.24F * chartMargin, y = yCord),
+                Size(size.width - 4.15F * chartMargin, (yCord - guideLineEnd))
+            )
+        }
+        drawLine(
+            start = Offset(x = 2.25F * chartMargin, y = yCord),
+            end = Offset(x = 3.25F * chartMargin, y = yCord),
+            color = axesColor,
+            strokeWidth = Stroke.DefaultMiter
+        )
+        drawIntoCanvas {
+            it.nativeCanvas.drawText("${y}%", 1.25F * chartMargin, yCord + 5, paint)
+        }
+    }
+    drawLine(
+        start = Offset(x = 3F * chartMargin, y = yAxisLinePos),
+        end = Offset(x = size.width - 0.9F * chartMargin, y = yAxisLinePos),
+        color = axesColor,
+        strokeWidth = Stroke.DefaultMiter
+    )
     points.forEachIndexed { ind, y ->
         if(points.size < 32) {
             drawIntoCanvas {
