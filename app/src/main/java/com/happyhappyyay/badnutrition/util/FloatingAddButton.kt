@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -16,33 +17,25 @@ import androidx.compose.ui.unit.dp
 import com.happyhappyyay.badnutrition.ui.theme.BadNutritionTheme
 
 @Composable
-fun ScrollButton(onClick: () -> Unit){
+fun FloatingAddButton(onClick: () -> Unit){
     Box(
         Modifier
             .fillMaxSize()
-            .padding(bottom = 50.dp),
-        Alignment.BottomCenter
+            .padding(bottom = 8.dp,end = 8.dp),
+        Alignment.BottomEnd
     ){
-        Button(modifier = Modifier
-            .shadow(8.dp, shape = CircleShape)
-            .clip(shape = CircleShape)
-            .size(50.dp),
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = MaterialTheme.colors.background
-            ),
-            onClick = { onClick() }) {
-            Icon(
-                Icons.Rounded.KeyboardArrowUp,
-                ""
-                )
+        FloatingActionButton(onClick = { onClick() }){
+            Icon(Icons.Rounded.Add,"")
         }
     }
 }
 
 @Preview
 @Composable
-fun PreviewScrollButton() {
+fun PreviewAddButton() {
     BadNutritionTheme{
-        ScrollButton{}
+        FloatingAddButton {
+
+        }
     }
 }

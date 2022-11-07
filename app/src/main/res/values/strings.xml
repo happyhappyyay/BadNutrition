@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Bad Nutrition</string>
+    <string name="add_food_nutrient_input">Nutrient Input</string>
 </resources>

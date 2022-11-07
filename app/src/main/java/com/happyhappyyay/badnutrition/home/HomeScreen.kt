@@ -305,7 +305,7 @@ fun StandardNutritionCard(nutrient: Nutrient, color: Color){
             .padding(8.dp)
             .wrapContentHeight(),
         elevation = 10.dp,
-        backgroundColor = Color(240,240,240)
+        backgroundColor = MaterialTheme.colors.background
     ) {
         Column {
             Surface(

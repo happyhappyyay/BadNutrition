@@ -18,6 +18,8 @@ In-Progress:
         up arrow to quickly move to top of lists
         matching colors to graph bars - design of color integration styles.jpg in ./Pictures
         modularize graph components
+        color of food item corresponding to nutrient that is largest (%?)
+        set add food button default selection
 
     Advised:
             Mimic Food label order for macro/micro nutrients as default
@@ -25,4 +27,9 @@ In-Progress:
             Add additional coloring for bars 0-25%R,25-75%Y,75-100%G
 
     Current:
+            AddFood pop up window
+                continue working on the rest of window
             add nutrient info to the expanded food items
+
+    Future:
+            Sanitize add food inputs
