@@ -2,7 +2,6 @@ package com.happyhappyyay.badnutrition.charts
 
 import android.graphics.Paint
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -34,10 +33,9 @@ fun ChartBase(data: Array<Float>, nutrients: Array<String>?) {
         paint.textSize = if(data.size < 32 && nutrients == null) 22F else 28F
         paint.color = axesColor.toArgb()
         Canvas(modifier = Modifier
-            .fillMaxHeight()
-            .fillMaxWidth()) {
+            .fillMaxSize()) {
             val chartMargin = if(size.height < size.width) size.height/35 else size.width/35
-            val yAxisLinePos = size.height - 2.25F * chartMargin
+            val yAxisLinePos = size.height - 3.5F * chartMargin
             val topValueOfChart = size.height / 5.25F
             val bottomValueOfChart = yAxisLinePos - topValueOfChart
             val yAxisLines = arrayOf(0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100)
@@ -106,7 +104,7 @@ fun ChartBase(data: Array<Float>, nutrients: Array<String>?) {
 @Composable
 fun PreviewLineChartInFrame(){
     BadNutritionTheme {
-        Chart(type = ChartTypes.Line, data = MockData().nutrientChartPoints)
+        Chart(type = ChartType.Line, data = MockData().nutrientChartPoints)
     }
 }
 
@@ -114,7 +112,7 @@ fun PreviewLineChartInFrame(){
 @Composable
 fun PreviewLineChartInFrameY(){
     BadNutritionTheme {
-        Chart(type = ChartTypes.Line, data = MockData().nutrientChartPointsY)
+        Chart(type = ChartType.Line, data = MockData().nutrientChartPointsY)
     }
 }
 
@@ -122,6 +120,6 @@ fun PreviewLineChartInFrameY(){
 @Composable
 fun PreviewBarChartInFrame(){
     BadNutritionTheme {
-        Chart(type = ChartTypes.Bar, data = MockData().nutrientItems)
+        Chart(type = ChartType.Bar, data = MockData().nutrientItems)
     }
 }

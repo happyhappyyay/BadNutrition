@@ -38,18 +38,20 @@ enum class AddFoodType {
     Manual
 }
 
-val nutrientItems = arrayOf("dawg","water","creaks","ash","calcium","iron", "calcium", "manganese", "magnesium",
+val nutrientItems = arrayOf(
+    "dawg", "water", "creaks", "ash", "calcium", "iron", "calcium", "manganese", "magnesium",
     "potassium", "sodium", "protein", "fat", "carbohydrates", "fiber",
-    "sugar", "phosphorous", "iodine", "tocopherol", "calories")
-val dropDownItems = arrayOf("kg", "lb", "mi","g","mg", "ug")
+    "sugar", "phosphorous", "iodine", "tocopherol", "calories"
+)
+val dropDownItems = arrayOf("kg", "lb", "mi", "g", "mg", "ug")
 
 @Composable
-fun AddFood(onCancel: () -> Unit, onAddFood: (Food)->Unit){
+fun AddFood(onCancel: () -> Unit, onAddFood: (Food) -> Unit) {
     var name by rememberSaveable { mutableStateOf("Kimchi") }
     var amount by rememberSaveable { mutableStateOf("1000") }
     var measure by rememberSaveable { mutableStateOf("Kg") }
-    var isSaving by rememberSaveable { mutableStateOf(true)    }
-    var isSearching by rememberSaveable { mutableStateOf(true)}
+    var isSaving by rememberSaveable { mutableStateOf(true) }
+    var isSearching by rememberSaveable { mutableStateOf(true) }
     var selected by rememberSaveable { mutableStateOf(AddFoodType.Manual) }
     var isMeasureDropped by rememberSaveable { mutableStateOf(false) }
     var isSearchDropped by rememberSaveable { mutableStateOf(false) }
@@ -64,7 +66,8 @@ fun AddFood(onCancel: () -> Unit, onAddFood: (Food)->Unit){
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
 
-    Card(Modifier.fillMaxWidth(),
+    Card(
+        Modifier.fillMaxWidth(),
         backgroundColor = MaterialTheme.colors.background,
         shape = RectangleShape
     )
@@ -72,8 +75,9 @@ fun AddFood(onCancel: () -> Unit, onAddFood: (Food)->Unit){
         Column(
             Modifier
                 .fillMaxWidth()
-                .fillMaxHeight()){
-            if(!isSearchDropped) {
+                .fillMaxHeight()
+        ) {
+            if (!isSearchDropped) {
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     color = MaterialTheme.colors.primary
@@ -85,7 +89,7 @@ fun AddFood(onCancel: () -> Unit, onAddFood: (Food)->Unit){
                     )
                     Box(contentAlignment = Alignment.TopEnd) {
                         IconButton(onClick = { onCancel() }) {
-                            Icon(Icons.Filled.Clear, contentDescription = "",)
+                            Icon(Icons.Filled.Clear, contentDescription = "")
                         }
                     }
                 }
@@ -128,7 +132,7 @@ fun AddFood(onCancel: () -> Unit, onAddFood: (Food)->Unit){
                         value = name,
                         onValueChange = {
                             name = it
-                            if(selected == AddFoodType.Manual && isSearching){
+                            if (selected == AddFoodType.Manual && isSearching) {
                                 isSearchDropped = true
                             }
                         },
@@ -136,13 +140,13 @@ fun AddFood(onCancel: () -> Unit, onAddFood: (Food)->Unit){
                         singleLine = true,
                     )
 
-                    if(isSearchDropped){
-                        FoodList(names = nutrientItems){
+                    if (isSearchDropped) {
+                        FoodList(names = nutrientItems) {
 
                         }
                     }
                 }
-                if(selected == AddFoodType.Manual) {
+                if (selected == AddFoodType.Manual) {
                     Box(
                         modifier = Modifier.fillMaxWidth(),
                         contentAlignment = Alignment.TopEnd
@@ -156,7 +160,7 @@ fun AddFood(onCancel: () -> Unit, onAddFood: (Food)->Unit){
                             }
                         )
                         {
-                            if(!isSearchDropped) {
+                            if (!isSearchDropped) {
                                 Text(
                                     "Search",
                                     modifier = Modifier.padding(top = 8.dp),
@@ -184,10 +188,9 @@ fun AddFood(onCancel: () -> Unit, onAddFood: (Food)->Unit){
                                     }
 
                                 }
-                            }
-                            else{
-                                IconButton(onClick = {isSearchDropped = false}){
-                                    Icon(Icons.Filled.Clear, contentDescription = "",)
+                            } else {
+                                IconButton(onClick = { isSearchDropped = false }) {
+                                    Icon(Icons.Filled.Clear, contentDescription = "")
                                 }
                             }
                         }
@@ -195,7 +198,7 @@ fun AddFood(onCancel: () -> Unit, onAddFood: (Food)->Unit){
                 }
 
             }
-            if(!isSearchDropped) {
+            if (!isSearchDropped) {
                 Row(modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp))
                 {
                     TextField(
@@ -334,7 +337,7 @@ fun AddFood(onCancel: () -> Unit, onAddFood: (Food)->Unit){
                                     .weight(1f)
                                     .clickable {
                                         onAddFood(MockData().food)
-                                   },
+                                    },
                                 style = MaterialTheme.typography.h6,
                                 textAlign = TextAlign.Center,
                                 color = MaterialTheme.colors.onPrimary
@@ -351,6 +354,6 @@ fun AddFood(onCancel: () -> Unit, onAddFood: (Food)->Unit){
 @Composable
 fun AddFoodPreview() {
     BadNutritionTheme {
-        AddFood(onCancel = {}){}
+        AddFood(onCancel = {}) {}
     }
 }

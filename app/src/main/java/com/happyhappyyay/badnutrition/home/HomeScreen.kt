@@ -1,13 +1,9 @@
 package com.happyhappyyay.badnutrition.home
 
-import android.graphics.drawable.shapes.RoundRectShape
-import android.graphics.drawable.shapes.Shape
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -29,7 +25,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.input.pointer.consumeAllChanges
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
@@ -39,14 +34,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.happyhappyyay.badnutrition.R
 import com.happyhappyyay.badnutrition.calendar.Calendar
 import com.happyhappyyay.badnutrition.data.MockData
 import com.happyhappyyay.badnutrition.data.nutrient.Nutrient
 import com.happyhappyyay.badnutrition.charts.Chart
-import com.happyhappyyay.badnutrition.charts.ChartTypes
+import com.happyhappyyay.badnutrition.charts.ChartType
 import com.happyhappyyay.badnutrition.util.adjustDate
 import com.happyhappyyay.badnutrition.util.currentDayString
 import com.happyhappyyay.badnutrition.day.TimeSpanUnit
@@ -64,7 +58,7 @@ enum class HomeType {
 }
 
 enum class HomeTime {
-    Day, Week, Month, Year
+    All, Day, Week, Month, Year, Special
 }
 
 val adequateRangeColor = Color(0,255,0, 165)
@@ -174,17 +168,18 @@ fun NutritionHome(date: String, style: HomeStyle, setType: (HomeType) -> Unit, d
             listState.firstVisibleItemIndex > 0
         }
     }
-    LazyColumn (
+    LazyColumn(
         modifier = Modifier
             .padding(start = 8.dp, end = 8.dp),
         state = listState
     ){
         item { ScreenHeading(type = HomeType.Nutrition,setType, dismiss) }
+        item {
+//            Chart(ChartTypes.Line, MockData().nutrientChartPoints, "Summary of $date")
+            Chart(Modifier.height(225.dp), type = ChartType.Bar, data = MockData().pointsFromNutrients(list), heading = "Summary of $date")
+
+        }
         itemsIndexed(list) { ind, nutritionItem ->
-            if(ind == 0){
-//                    Chart(ChartTypes.Line, MockData().nutrientChartPoints, "Summary of $date")
-                Chart(ChartTypes.Bar, MockData().pointsFromNutrients(list), "Summary of $date")
-            }
             when(style) {
                 HomeStyle.Simple -> SimpleNutritionCard(nutritionItem)
                 HomeStyle.Standard -> StandardNutritionCard(nutritionItem, GraphBarColors[ind])

@@ -26,13 +26,13 @@ fun DrawScope.lineChart(
     val pointColor = lineColors[2]
     val averageColor = lineColors[3]
     val chartMargin = if(size.height < size.width) size.height/35 else size.width/35
-    val yAxisLinePos = size.height - 2.25F * chartMargin
+    val yAxisLinePos = size.height - 1.7F * chartMargin
     val topValueOfChart = size.height / 5.25F
     val bottomValueOfChart = yAxisLinePos - topValueOfChart
     var date = 1
     var average = 0F
     val offsetPoints = mutableListOf<Offset>()
-    var currentXOffset = 3.5F * chartMargin
+    var currentXOffset = chartMargin
     val month = points.size/12 + 1
     val xOffset =
         if (points.isNotEmpty()) ((size.width - 4.3F * chartMargin) / points.size) else size.width
@@ -42,30 +42,30 @@ fun DrawScope.lineChart(
             bottomValueOfChart - (bottomValueOfChart * ((y * 1F) / 100)) + topValueOfChart
         val guideLineEnd =
             bottomValueOfChart - (bottomValueOfChart * (((y+10) * 1F) / 100)) + topValueOfChart
-        if(ind > 0) {
-//                    PUT ALL THIS ONTO THE ACTUAL CHARTS
-            drawRect(
-                if (ind % 2 == 1) lineGuideColor1 else lineGuideColor2,
-                Offset(x = 3.24F * chartMargin, y = yCord),
-                Size(size.width - 4.15F * chartMargin, (yCord - guideLineEnd))
-            )
-        }
-        drawLine(
-            start = Offset(x = 2.25F * chartMargin, y = yCord),
-            end = Offset(x = 3.25F * chartMargin, y = yCord),
-            color = axesColor,
-            strokeWidth = Stroke.DefaultMiter
-        )
-        drawIntoCanvas {
-            it.nativeCanvas.drawText("${y}%", 1.25F * chartMargin, yCord + 5, paint)
-        }
+//        if(ind > 0) {
+////                    PUT ALL THIS ONTO THE ACTUAL CHARTS
+//            drawRect(
+//                if (ind % 2 == 1) lineGuideColor1 else lineGuideColor2,
+//                Offset(x = 3.24F * chartMargin, y = yCord),
+//                Size(size.width - 4.15F * chartMargin, (yCord - guideLineEnd))
+//            )
+//        }
+//        drawLine(
+//            start = Offset(x = 2.25F * chartMargin, y = yCord),
+//            end = Offset(x = 3.25F * chartMargin, y = yCord),
+//            color = axesColor,
+//            strokeWidth = Stroke.DefaultMiter
+//        )
+//        drawIntoCanvas {
+//            it.nativeCanvas.drawText("${y}%", 1.25F * chartMargin, yCord + 5, paint)
+//        }
     }
-    drawLine(
-        start = Offset(x = 3F * chartMargin, y = yAxisLinePos),
-        end = Offset(x = size.width - 0.9F * chartMargin, y = yAxisLinePos),
-        color = axesColor,
-        strokeWidth = Stroke.DefaultMiter
-    )
+//    drawLine(
+//        start = Offset(x = 3F * chartMargin, y = yAxisLinePos),
+//        end = Offset(x = size.width - 0.9F * chartMargin, y = 0F),
+//        color = axesColor,
+//        strokeWidth = Stroke.DefaultMiter
+//    )
     points.forEachIndexed { ind, y ->
         if(points.size < 32) {
             drawIntoCanvas {
@@ -78,8 +78,8 @@ fun DrawScope.lineChart(
             }
 //          Y-AXIS tick marks - month or less
             drawLine(
-                start = Offset(x = currentXOffset + 9, y = yAxisLinePos),
-                end = Offset(x = currentXOffset + 9, y = yAxisLinePos + chartMargin/1.5F),
+                start = Offset(x = currentXOffset, y = yAxisLinePos),
+                end = Offset(x = currentXOffset, y = size.height),
                 color = axesColor,
                 strokeWidth = Stroke.DefaultMiter
             )
@@ -99,14 +99,14 @@ fun DrawScope.lineChart(
                     it.nativeCanvas.drawText(
                         months[ind/month],
                         currentXOffset,
-                        yAxisLinePos + 1.65F * chartMargin,
+                        yAxisLinePos + 1.5F * chartMargin,
                         paint
                     )
                 }
 //              Y-AXIS tick marks - beyond month
                 drawLine(
                     start = Offset(x = currentXOffset, y = yAxisLinePos),
-                    end = Offset(x = currentXOffset, y = yAxisLinePos + chartMargin/1.5F),
+                    end = Offset(x = currentXOffset, y = yAxisLinePos + chartMargin),
                     color = axesColor,
                     strokeWidth = Stroke.DefaultMiter
                 )

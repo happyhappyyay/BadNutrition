@@ -21,7 +21,7 @@ fun DrawScope.barChart(
     val axesColor = lineColors[0]
     val averageColor = lineColors[3]
     val chartMargin = if(size.height < size.width) size.height/35 else size.width/35
-    val yAxisLinePos = size.height - 2.25F * chartMargin
+    val yAxisLinePos = size.height - 3.5F * chartMargin
     val topValueOfChart = size.height / 5.25F
     val bottomValueOfChart = yAxisLinePos - topValueOfChart
     var average = 0F
@@ -53,7 +53,7 @@ fun DrawScope.barChart(
                 ),
                 size = Size(width = 70F, height =  yAxisLinePos - cordY - 2 ),
             )
-            translate(-10F,size.height-(1.2F * chartMargin) - 12) {
+            translate(-10F,size.height-(3.5F * chartMargin)) {
                 rotate(270F, pivot = Offset(0F,0F)) {
                     drawIntoCanvas {
                         it.nativeCanvas.drawText(

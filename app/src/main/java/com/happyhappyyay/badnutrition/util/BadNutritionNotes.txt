@@ -1,5 +1,6 @@
 Calendar: Locale Monday/Sunday first day
 typo at androidx.compose.ui.window AndroidDialog.android.kt Dialog
+typo at java.lang.IllegalStateException: Horizontally scrollable component was measured with an infinity maximum width constraints, which is disallowed. One of the common reasons is nesting layouts like LazyRow and Row(Modifier.horizontalScroll()). If you want to add a header before the list of items please add a header as a separate item() before the main items() inside the LazyRow scope. There are could be other reasons
 
 In-Progress:
     Concepts:
@@ -27,9 +28,29 @@ In-Progress:
             Add additional coloring for bars 0-25%R,25-75%Y,75-100%G
 
     Current:
-            AddFood pop up window
-                continue working on the rest of window
-            add nutrient info to the expanded food items
 
     Future:
             Sanitize add food inputs
+            Graph on food items change with different item selection
+
+
+
+
+    Graph Options:
+        Bar
+        Line
+        Scatter?
+choose  food item(s) (all, selection of items, one item, PARTITION)
+in      time span (all, day, week, month, year or custom range)
+            by increment (day, week, month, year)
+in      partition (all, breakfast, partition2, dinner, partition3...)
+           !!! how many times did i eat how many meals did i have!!!
+with    nutrient(s) (all, selection of items, or one item)
+as         % (1%, 2%, 3%...)
+or as      measured value (1mg, 2mg, 3mg...)
+or with occurrences
+as         exists (0% or 100%)
+or as      entries (1 ,2 ,3...)
+or as      servings (1, 2, 3...)
+when multiple items: average(mean), sum, most frequent(mode), minimum, maximum, averaged difference
+include/exclude    empty entries(no data-all 0s), range - [upper bound x, lower bound y]
