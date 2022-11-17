@@ -43,7 +43,6 @@ import com.happyhappyyay.badnutrition.charts.Chart
 import com.happyhappyyay.badnutrition.charts.ChartType
 import com.happyhappyyay.badnutrition.util.adjustDate
 import com.happyhappyyay.badnutrition.util.currentDayString
-import com.happyhappyyay.badnutrition.day.TimeSpanUnit
 import com.happyhappyyay.badnutrition.ui.theme.*
 import com.happyhappyyay.badnutrition.util.ScrollButton
 import kotlinx.coroutines.launch
@@ -57,7 +56,7 @@ enum class HomeType {
     Nutrition, Food
 }
 
-enum class HomeTime {
+enum class TimeSpanUnit {
     All, Day, Week, Month, Year, Special
 }
 

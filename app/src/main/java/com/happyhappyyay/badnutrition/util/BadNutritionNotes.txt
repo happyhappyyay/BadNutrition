@@ -1,6 +1,8 @@
 Calendar: Locale Monday/Sunday first day
 typo at androidx.compose.ui.window AndroidDialog.android.kt Dialog
 typo at java.lang.IllegalStateException: Horizontally scrollable component was measured with an infinity maximum width constraints, which is disallowed. One of the common reasons is nesting layouts like LazyRow and Row(Modifier.horizontalScroll()). If you want to add a header before the list of items please add a header as a separate item() before the main items() inside the LazyRow scope. There are could be other reasons
+State info: https://dev.to/zachklipp/two-mutables-dont-make-a-right-2kgp
+Smart Tool Factory: GOOD tutorials?
 
 In-Progress:
     Concepts:
@@ -9,7 +11,7 @@ In-Progress:
 
         Card View: fun form?-apple fills for goal %
         Categories for foods?
-        horizontal bar graph? Select nutrient items to change graph on food distribution?
+        Select nutrient items to change graph on food distribution?
         list all dates/partitions for a specific food
         compare foods/nutrient days long click
         streaks for x days in a row meeting goal x?
@@ -21,6 +23,7 @@ In-Progress:
         modularize graph components
         color of food item corresponding to nutrient that is largest (%?)
         set add food button default selection
+        gestures for swiping away filter and closing ItemSelector screen?
 
     Advised:
             Mimic Food label order for macro/micro nutrients as default
@@ -28,13 +31,11 @@ In-Progress:
             Add additional coloring for bars 0-25%R,25-75%Y,75-100%G
 
     Current:
-
     Future:
             Sanitize add food inputs
             Graph on food items change with different item selection
 
-
-
+--------------------------------------------------------------------------
 
     Graph Options:
         Bar

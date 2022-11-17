@@ -43,7 +43,7 @@ val nutrientItems = arrayOf(
     "potassium", "sodium", "protein", "fat", "carbohydrates", "fiber",
     "sugar", "phosphorous", "iodine", "tocopherol", "calories"
 )
-val dropDownItems = arrayOf("kg", "lb", "mi", "g", "mg", "ug")
+val unitItems = arrayOf("kg", "lb", "mi", "g", "mg", "ug")
 
 @Composable
 fun AddFood(onCancel: () -> Unit, onAddFood: (Food) -> Unit) {
@@ -249,7 +249,7 @@ fun AddFood(onCancel: () -> Unit, onAddFood: (Food) -> Unit) {
                                             .fillMaxWidth()
                                             .padding(start = 8.dp)
                                     ) {
-                                        dropDownItems.forEach {
+                                        unitItems.forEach {
                                             Text(
                                                 text = it,
                                                 modifier = Modifier
@@ -261,7 +261,8 @@ fun AddFood(onCancel: () -> Unit, onAddFood: (Food) -> Unit) {
                                                         color = if (dropSelected == it) focusCol
                                                         else MaterialTheme.colors.background
                                                     )
-                                                    .fillMaxWidth())
+                                                    .fillMaxWidth()
+                                            )
                                         }
                                     }
                                 }

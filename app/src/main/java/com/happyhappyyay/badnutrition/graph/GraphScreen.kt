@@ -1,10 +1,7 @@
 package com.happyhappyyay.badnutrition.graph
 
 import android.content.res.Configuration
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -24,13 +21,16 @@ import com.happyhappyyay.badnutrition.charts.Chart
 import com.happyhappyyay.badnutrition.charts.ChartType
 import com.happyhappyyay.badnutrition.data.MockData
 import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import com.happyhappyyay.badnutrition.R
+import com.happyhappyyay.badnutrition.home.nutrientItems
 import com.happyhappyyay.badnutrition.ui.theme.*
 import com.happyhappyyay.badnutrition.util.SimpleCheckBox
 import com.happyhappyyay.badnutrition.util.SimpleRadioButton
+import com.happyhappyyay.badnutrition.util.adjustTransparency
 
 enum class CategoryType {
     Food, Nutrient, Partition, Time
@@ -54,8 +54,7 @@ fun GraphScreen() {
     var includeValueRange by rememberSaveable { mutableStateOf(false) }
     var minimumValue by rememberSaveable { mutableStateOf(0) }
     var maximumValue by rememberSaveable { mutableStateOf(0) }
-
-
+    var isShowingSelection by rememberSaveable { mutableStateOf(false) }
 
     OrientationBasedGraphFrame(composable1 = { modifier ->
         ChosenChart(
@@ -84,8 +83,10 @@ fun GraphScreen() {
             onSelectEntries = {
                 includeEmptyEntries = !includeEmptyEntries
             },
-            selectedEntries = includeEmptyEntries,
-        )
+            selectedEntries = includeEmptyEntries
+        ) {
+            isShowingSelection = !isShowingSelection
+        }
     }, isFullScreen
     )
     AnimatedVisibility(visible = isFullScreen, enter = fadeIn(), exit = fadeOut()) {
@@ -97,6 +98,11 @@ fun GraphScreen() {
                     contentDescription = ""
                 )
             }
+        }
+    }
+    AnimatedVisibility(visible = isShowingSelection, enter = slideInVertically(initialOffsetY = {fullHeight -> fullHeight }), exit = slideOutVertically(targetOffsetY = {fullHeight -> fullHeight })) {
+        ItemSelector(things = list, title = "foods", needsFilter = true) {
+            isShowingSelection = !isShowingSelection
         }
     }
 }
@@ -184,7 +190,8 @@ fun ControlBox(
     onSelectMetric: (GraphMeasurementType) -> Unit,
     selectedMetric: GraphMeasurementType,
     onSelectEntries: () -> Unit,
-    selectedEntries: Boolean
+    selectedEntries: Boolean,
+    graphChartSelection: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -234,10 +241,10 @@ fun ControlBox(
                     selectedItem = GraphCalculationType.Mean,
                     items = GraphCalculationType.values(),
                     selectItem = { })
-                GraphChartSelectionForm("Foods")
-                GraphChartSelectionForm("Nutrients")
-                GraphChartSelectionForm("Partitions")
-                GraphChartSelectionForm("Time Span")
+                GraphChartSelectionForm("Foods") { graphChartSelection() }
+                GraphChartSelectionForm("Nutrients") { graphChartSelection() }
+                GraphChartSelectionForm("Partitions") { graphChartSelection() }
+                GraphChartSelectionForm("Time Span") { graphChartSelection() }
                 EntryForm(selectedEntries, onSelectEntries)
             }
         }
@@ -261,7 +268,7 @@ fun <T : Enum<T>> GraphRadioForm(
 }
 
 @Composable
-fun GraphChartSelectionForm(title: String) {
+fun GraphChartSelectionForm(title: String, filterItems: (String) -> Unit) {
     Card(
         Modifier
             .padding(8.dp)
@@ -289,7 +296,7 @@ fun GraphChartSelectionForm(title: String) {
                 Text(
                     "All selected", modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center
                 )
-                TextButton(modifier = Modifier.fillMaxWidth(), onClick = { /*TODO*/ }) {
+                TextButton(modifier = Modifier.fillMaxWidth(), onClick = { filterItems(title) }) {
                     Text("Select $title")
                 }
             }
@@ -387,7 +394,8 @@ fun PreviewControlBox() {
             {},
             GraphMeasurementType.Exists,
             { },
-            true
+            true,
+            {}
         )
     }
 }
