@@ -9,28 +9,28 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import com.happyhappyyay.badnutrition.charts.Chart
-import com.happyhappyyay.badnutrition.charts.ChartType
-import com.happyhappyyay.badnutrition.data.MockData
-import androidx.compose.runtime.*
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.happyhappyyay.badnutrition.R
-import com.happyhappyyay.badnutrition.home.nutrientItems
-import com.happyhappyyay.badnutrition.ui.theme.*
+import com.happyhappyyay.badnutrition.charts.Chart
+import com.happyhappyyay.badnutrition.charts.ChartType
+import com.happyhappyyay.badnutrition.data.MockData
+import com.happyhappyyay.badnutrition.ui.theme.BadNutritionTheme
+import com.happyhappyyay.badnutrition.ui.theme.halfRoundedShapeLeft
+import com.happyhappyyay.badnutrition.ui.theme.halfRoundedShapeTop
 import com.happyhappyyay.badnutrition.util.SimpleCheckBox
 import com.happyhappyyay.badnutrition.util.SimpleRadioButton
-import com.happyhappyyay.badnutrition.util.adjustTransparency
 
 enum class CategoryType {
     Food, Nutrient, Partition, Time
@@ -54,7 +54,7 @@ fun GraphScreen() {
     var includeValueRange by rememberSaveable { mutableStateOf(false) }
     var minimumValue by rememberSaveable { mutableStateOf(0) }
     var maximumValue by rememberSaveable { mutableStateOf(0) }
-    var isShowingSelection by rememberSaveable { mutableStateOf(false) }
+    var isShowingSelection by rememberSaveable { mutableStateOf(true) }
 
     OrientationBasedGraphFrame(composable1 = { modifier ->
         ChosenChart(
@@ -100,7 +100,11 @@ fun GraphScreen() {
             }
         }
     }
-    AnimatedVisibility(visible = isShowingSelection, enter = slideInVertically(initialOffsetY = {fullHeight -> fullHeight }), exit = slideOutVertically(targetOffsetY = {fullHeight -> fullHeight })) {
+    AnimatedVisibility(
+        visible = isShowingSelection,
+        enter = slideInVertically(initialOffsetY = { fullHeight -> fullHeight }),
+        exit = slideOutVertically(targetOffsetY = { fullHeight -> fullHeight })
+    ) {
         ItemSelector(things = list, title = "foods", needsFilter = true) {
             isShowingSelection = !isShowingSelection
         }

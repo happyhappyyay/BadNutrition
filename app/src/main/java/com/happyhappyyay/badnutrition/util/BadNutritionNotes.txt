@@ -24,6 +24,10 @@ In-Progress:
         color of food item corresponding to nutrient that is largest (%?)
         set add food button default selection
         gestures for swiping away filter and closing ItemSelector screen?
+        Add favorite-ing to foods
+        Replace sorting items not nutrient
+        Option for self-Created foods? filter?
+        for food percent dv and total nutrient for time (e.g., nut- calcium 5% / 19%)?
 
     Advised:
             Mimic Food label order for macro/micro nutrients as default
@@ -31,7 +35,13 @@ In-Progress:
             Add additional coloring for bars 0-25%R,25-75%Y,75-100%G
 
     Current:
+    Add sort option to item selection
+        entry date
+        alphabetical
+        value sort
+    Add information to food list
     Future:
+            UI StateHolder for add filter
             Sanitize add food inputs
             Graph on food items change with different item selection
 
