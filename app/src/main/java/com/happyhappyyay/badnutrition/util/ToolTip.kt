@@ -3,16 +3,16 @@ package com.happyhappyyay.badnutrition.util
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 
-class ToolTipBottomShape() : Shape {
+class ToolTipBottomShape : Shape {
 
     override fun createOutline(
-        size: Size,
-        layoutDirection: LayoutDirection,
-        density: Density
+        size: Size, layoutDirection: LayoutDirection, density: Density
     ): Outline {
         return Outline.Generic(
             path = drawToolTipBottomPointPath(size = size)
@@ -20,12 +20,10 @@ class ToolTipBottomShape() : Shape {
     }
 }
 
-class ToolTipLeftShape() : Shape {
+class ToolTipLeftShape : Shape {
 
     override fun createOutline(
-        size: Size,
-        layoutDirection: LayoutDirection,
-        density: Density
+        size: Size, layoutDirection: LayoutDirection, density: Density
     ): Outline {
         return Outline.Generic(
             path = drawToolTipLeftSidePointPath(size = size)
@@ -33,15 +31,12 @@ class ToolTipLeftShape() : Shape {
     }
 }
 
-class ToolTipRightShape() : Shape {
+class ToolTipRightShape : Shape {
 
     override fun createOutline(
-        size: Size,
-        layoutDirection: LayoutDirection,
-        density: Density
+        size: Size, layoutDirection: LayoutDirection, density: Density
     ): Outline {
         return Outline.Generic(
-            // Draw your custom path here
             path = drawToolTipRightSidePointPath(size = size)
         )
     }
@@ -75,7 +70,7 @@ fun drawToolTipLeftSidePointPath(size: Size): Path {
         lineTo(width, height)
         lineTo(width * .1F, height)
         lineTo(width * .1f, height * .6F)
-        lineTo(0F,height * .5F)
+        lineTo(0F, height * .5F)
         lineTo(width * .1F, height * .4F)
         lineTo(width * .1F, 0F)
         close()
@@ -98,47 +93,11 @@ fun drawToolTipRightSidePointPath(size: Size): Path {
     }
 }
 
-fun drawToolTipLeftPointPath(size: Size): Path {
-    val (width, height) = size
-
-    return Path().apply {
-        reset()
-        moveTo(width * .1F, 0F)
-        lineTo(width, 0F)
-        lineTo(width, height*.95F)
-        lineTo(width * .2F, height*.95F)
-        lineTo(0F, height)
-        lineTo(width * .1F, height * .8F)
-        lineTo(width * .1F, 0F)
-        close()
-    }
-}
-
-fun drawToolTipRightPointPath(size: Size): Path {
-    val (width, height) = size
-
-    return Path().apply {
-        reset()
-        lineTo(width * .9F, 0F)
-        lineTo(width * .9F, height*.8F)
-        lineTo(width, height)
-        lineTo(width * .9F,height * .95F)
-        lineTo(0F,height*.95F)
-        lineTo(0F,0F)
-        close()
-    }
-}
-
-
-class AppleShape() : Shape {
-
+class AppleShape : Shape {
     override fun createOutline(
-        size: Size,
-        layoutDirection: LayoutDirection,
-        density: Density
+        size: Size, layoutDirection: LayoutDirection, density: Density
     ): Outline {
         return Outline.Generic(
-            // Draw your custom path here
             path = drawApplePath(size = size)
         )
     }
@@ -151,9 +110,8 @@ fun drawApplePath(offset: Offset = Offset.Zero, size: Size, offsetCenter: Boolea
         x = (x - width + x) / 2
         y = (y - height + y) / 2
     }
-    val p = Path().apply {
+    return Path().apply {
         reset()
-
         moveTo(x + width * 0.50432336F, y + height * 0.9540431F)
         quadraticBezierTo(
             x + width * 0.30618492F,
@@ -191,22 +149,12 @@ fun drawApplePath(offset: Offset = Offset.Zero, size: Size, offsetCenter: Boolea
             x + width * 0.50432336F,
             y + height * 0.9540431F
         )
-//        quadraticBezierTo(x + width*.296F,y + height*1.188F,x + width*.128F,y + height*.820F)
-//        quadraticBezierTo(x + width*-.122F,y + height*.361F,x + width*.081F,y + height*.163F)
-//        quadraticBezierTo(x + width*.283F,y + height*-.031F,x + width*.486F,y + height*.157F)
-//        quadraticBezierTo(x +width*.688F,y + height*-.031F,x + width*.892F,y + height*.163F)
-//        quadraticBezierTo(x + width*1.093F,y + height*.358F,x + width*.858F,y + height*.820F)
-//        quadraticBezierTo( x + width*.686F,y + height*1.185F,x + width*.493F,y + height*.867F)
         close()
     }
-    return p
-
 }
 
 fun drawAppleStemPath(
-    offset: Offset = Offset.Zero,
-    size: Size,
-    offsetCenter: Boolean = false
+    offset: Offset = Offset.Zero, size: Size, offsetCenter: Boolean = false
 ): Path {
     val (width, height) = size
     var (x, y) = offset
@@ -214,12 +162,8 @@ fun drawAppleStemPath(
         x = (x - width + x) / 2
         y = (y - height + y) / 2
     }
-    val q = Path().apply {
+    return Path().apply {
         reset()
-//        moveTo(x + width*.486F, y + height*.157F)
-//        quadraticBezierTo(x + width*.465F,y + height*.035F,x + width*.499F,y + height*.001F)
-//        lineTo(x + width*.503F,y + height*.005F)
-//        quadraticBezierTo(x + width*.488F,y + height*.103F,x + width*.502F,y + height*.143F)
         moveTo(x + width * 0.49443966F, y + height * 0.15706807F)
         quadraticBezierTo(
             x + width * 0.47483158F,
@@ -236,6 +180,4 @@ fun drawAppleStemPath(
         )
         close()
     }
-    return q
-
 }

@@ -1,5 +1,6 @@
 package com.happyhappyyay.badnutrition
 
+import com.happyhappyyay.badnutrition.data.database.*
 import com.happyhappyyay.badnutrition.data.food.Portion
 import com.happyhappyyay.badnutrition.data.nutrient.Goal
 import com.happyhappyyay.badnutrition.data.nutrient.NutrientValue

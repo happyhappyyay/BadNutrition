@@ -68,7 +68,6 @@ fun SimpleRadioButton(
 fun PreviewSimpleRadioButton() {
     BadNutritionTheme {
         SimpleRadioButton(isEnabled = false) {
-
         }
     }
 }

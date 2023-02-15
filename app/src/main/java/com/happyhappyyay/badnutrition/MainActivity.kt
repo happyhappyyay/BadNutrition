@@ -5,9 +5,9 @@ import android.os.StrictMode
 import android.os.StrictMode.VmPolicy
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import com.happyhappyyay.badnutrition.database.NutritionDatabase
-import com.happyhappyyay.badnutrition.home.Home
-import com.happyhappyyay.badnutrition.home.HomeViewModel
+import com.happyhappyyay.badnutrition.data.database.NutritionDatabase
+import com.happyhappyyay.badnutrition.ui.home.Home
+import com.happyhappyyay.badnutrition.ui.home.HomeViewModel
 import com.happyhappyyay.badnutrition.ui.theme.BadNutritionTheme
 
 
