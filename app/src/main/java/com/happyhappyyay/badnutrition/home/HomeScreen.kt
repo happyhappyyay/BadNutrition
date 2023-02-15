@@ -1,5 +1,7 @@
 package com.happyhappyyay.badnutrition.home
 
+import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -36,9 +38,11 @@ import androidx.compose.ui.window.Dialog
 import com.happyhappyyay.badnutrition.R
 import com.happyhappyyay.badnutrition.calendar.Calendar
 import com.happyhappyyay.badnutrition.charts.Chart
-import com.happyhappyyay.badnutrition.charts.ChartType
+import com.happyhappyyay.badnutrition.charts.DonutChart
+import com.happyhappyyay.badnutrition.charts.GraphType
 import com.happyhappyyay.badnutrition.data.MockData
 import com.happyhappyyay.badnutrition.data.nutrient.Nutrient
+import com.happyhappyyay.badnutrition.graph.GraphScreen
 import com.happyhappyyay.badnutrition.ui.theme.*
 import com.happyhappyyay.badnutrition.util.ScrollButton
 import com.happyhappyyay.badnutrition.util.adjustDate
@@ -64,11 +68,15 @@ val emptyBarColor = Color(201, 201, 201)
 
 const val horGestureThreshold = 50
 
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun Home(viewModel: HomeViewModel) {
-    Scaffold {
-        HomeContent()
-    }
+    val rememberMutableInteraction = MutableInteractionSource()
+    GraphScreen()
+//    DonutChart()
+//    Scaffold {
+//        HomeContent()
+//    }
 }
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -146,11 +154,6 @@ fun HomeFrontLayer(
 }
 
 @Composable
-fun FoodHome(dismiss: () -> Unit) {
-    Foods()
-}
-
-@Composable
 fun ScreenHeader(
     type: HomeType,
     setType: (HomeType) -> Unit,
@@ -174,46 +177,55 @@ fun NutritionHome(
     val list = MockData().createNutritionList()
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+    var selectedBar by remember { mutableStateOf(-1) }
     val showButton by remember {
         derivedStateOf {
             listState.firstVisibleItemIndex > 0
         }
     }
-    LazyColumn(
-        modifier = Modifier
-            .padding(start = 8.dp, end = 8.dp),
-        state = listState
-    ) {
-        item { ScreenHeading(type = HomeType.Nutrition, setType, dismiss) }
-        item {
-//            Chart(ChartTypes.Line, MockData().nutrientChartPoints, "Summary of $date")
-            Chart(
-                Modifier
-                    .height(225.dp)
-                    .pointerInput(Unit) {
-                        detectTapGestures(onLongPress = {
+    Column {
+        Log.d("NUTRITION HOME", "recomposed")
+        ScreenHeading(type = HomeType.Nutrition, setType, dismiss)
+        Chart(
+            Modifier
+                .height(225.dp)
+                .pointerInput(Unit) {
+                    detectTapGestures(onLongPress = {
 //                            TODO: create menu to navigate to graph
-                        })
-                    },
-                type = ChartType.Bar,
-                data = MockData().pointsFromNutrients(list),
-                heading = "Summary of $date"
-            )
-
-        }
-        itemsIndexed(list) { ind, nutritionItem ->
-            when (style) {
-                HomeStyle.Simple -> SimpleNutritionCard(nutritionItem)
-                HomeStyle.Standard -> StandardNutritionCard(nutritionItem, GraphBarColors[ind])
-                HomeStyle.Complex -> ComplexNutritionCard(nutritionItem)
+                    })
+                },
+            type = GraphType.Bar,
+            data = MockData().pointsFromNutrients(list),
+            heading = "Summary of $date",
+            selectedBar = selectedBar,
+            onSelected = { bar ->
+                selectedBar = bar?.index ?: -1
+                if (bar != null) coroutineScope.launch {
+                    listState.animateScrollToItem(bar.index)
+                }
             }
-        }
-        item {
-            Spacer(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(64.dp)
-            )
+        )
+
+        LazyColumn(
+            modifier = Modifier
+                .padding(start = 8.dp, end = 8.dp),
+            state = listState
+        ) {
+
+            itemsIndexed(list) { ind, nutritionItem ->
+                when (style) {
+                    HomeStyle.Simple -> SimpleNutritionCard(nutritionItem)
+                    HomeStyle.Standard -> StandardNutritionCard(nutritionItem, GraphBarColors[ind])
+                    HomeStyle.Complex -> ComplexNutritionCard(nutritionItem)
+                }
+            }
+            item {
+                Spacer(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(64.dp)
+                )
+            }
         }
     }
     AnimatedVisibility(
@@ -225,7 +237,6 @@ fun NutritionHome(
             }
         }
     }
-
 }
 
 @Composable
@@ -310,6 +321,7 @@ fun ComplexNutritionCard(nutrient: Nutrient) {
 
 @Composable
 fun StandardNutritionCard(nutrient: Nutrient, color: Color) {
+    Log.d("CARD ${nutrient.name}", "recomposed")
     val percentage = if (nutrient.goal.min > 0)
         Math.round((nutrient.value / (nutrient.goal.min * 1F)) * 100)
     else
@@ -438,6 +450,7 @@ fun StandardNutritionCard(nutrient: Nutrient, color: Color) {
 
 @Composable
 fun ScreenHeading(type: HomeType, setType: (HomeType) -> Unit, dismiss: () -> Unit) {
+    Log.d("HEADING", "recomposed")
     Surface(
         modifier = Modifier
             .height(45.dp)
@@ -496,6 +509,7 @@ fun NutritionAppBar() {
     var filter by remember {
         mutableStateOf(false)
     }
+    Log.d("APP BAR", "recomposed")
     TopAppBar(backgroundColor = MaterialTheme.colors.primaryVariant) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -543,6 +557,7 @@ fun NutritionFilterItem(
     modifier: Modifier = Modifier,
     onClick: (TimeSpanUnit) -> Unit
 ) {
+    Log.d("FILTER ITEM", "recomposed")
     val color by animateColorAsState(
         if (screen == selected)
             MaterialTheme.colors.primaryVariant

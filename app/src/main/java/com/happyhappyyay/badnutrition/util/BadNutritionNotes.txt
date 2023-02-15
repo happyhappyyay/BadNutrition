@@ -7,7 +7,6 @@ Smart Tool Factory: GOOD tutorials?
 In-Progress:
     Concepts:
         Brand:  name - nutrition story?
-                LOGO? Inset Apple into book? or Sheet?
 
         Card View: fun form?-apple fills for goal %
         Categories for foods?
@@ -28,6 +27,7 @@ In-Progress:
         Replace sorting items not nutrient
         Option for self-Created foods? filter?
         for food percent dv and total nutrient for time (e.g., nut- calcium 5% / 19%)?
+        extend click space to the text next to the bar?
 
     Advised:
             Mimic Food label order for macro/micro nutrients as default
@@ -35,18 +35,36 @@ In-Progress:
             Add additional coloring for bars 0-25%R,25-75%Y,75-100%G
 
     Current:
-    Add sort option to item selection
-        entry date
-        alphabetical
-        value sort
-    Add information to food list
+    Dates off by 1
+    settings for graph
+        SubComposeLayout for nested dropdown box (expanded dropdowntop subocomposelayout else text )
+        Add information to food list
     Future:
             UI StateHolder for add filter
             Sanitize add food inputs
             Graph on food items change with different item selection
 
 --------------------------------------------------------------------------
+Images
+    Spiral with an apple hanging from it?
+        graph legend corners
+    Inset Apple into book? or Sheet?
+        logo
+        tree with apple hanging (garden of eden or newton?)
+    Selected item based on fruit ( selected circle for graph )
+        Apple - red
+        Banana - yellow
+        Orange - orange
+        Lime - green
+        Cookie/Coconut/Potato - brown
+        Blueberry - blue
+        Eggplant - purple
+        Onion - white
+        Blackberry - black
 
+
+
+--------------------------------------------------------------------------
     Graph Options:
         Bar
         Line
@@ -65,3 +83,12 @@ or as      entries (1 ,2 ,3...)
 or as      servings (1, 2, 3...)
 when multiple items: average(mean), sum, most frequent(mode), minimum, maximum, averaged difference
 include/exclude    empty entries(no data-all 0s), range - [upper bound x, lower bound y]
+
+------------------------------------------------------------------------------
+Style
+    Nouns/ adjective + nouns for composables
+    rememberName for remembered items
+    PascalCase for constants despite kotlin convention
+    modifier passed only to top level element
+        only one modifier
+    Column/Row saves all data as opposed to lazy versions

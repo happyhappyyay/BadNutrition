@@ -1,5 +1,5 @@
 package com.happyhappyyay.badnutrition.charts
 
-enum class ChartType {
+enum class GraphType {
     Bar, Line, Scatter
 }

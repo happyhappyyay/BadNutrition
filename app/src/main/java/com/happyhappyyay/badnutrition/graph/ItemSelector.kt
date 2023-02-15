@@ -44,7 +44,6 @@ import com.happyhappyyay.badnutrition.home.unitItems
 import com.happyhappyyay.badnutrition.ui.theme.BadNutritionTheme
 import com.happyhappyyay.badnutrition.ui.theme.Shapes
 import com.happyhappyyay.badnutrition.util.ScrollButton
-import com.happyhappyyay.badnutrition.util.adjustTransparency
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -88,7 +87,10 @@ enum class ListModification {
 
 @Composable
 fun ItemSelector(
-    things: Array<String>, title: String, needsFilter: Boolean, onDismiss: () -> Unit
+    needsFilter: Boolean = false,
+    title: String,
+    things: Array<String>,
+    onDismiss: () -> Unit,
 ) {
     var direction = 0
     var isFiltered by rememberSaveable { mutableStateOf(false) }
@@ -159,7 +161,7 @@ fun ItemSelector(
                     }
                 }
             }
-            Box(modifier = Modifier
+            val modifier = if (needsFilter) Modifier
                 .pointerInput(Unit) {
                     detectDragGestures(
                         onDrag = { change, dragAmount ->
@@ -174,7 +176,9 @@ fun ItemSelector(
                                 isFiltered = !isFiltered
                             }
                         })
-                }) {
+                }
+            else Modifier
+            Box(modifier = modifier) {
                 Column {
                     Row {
                         AnimatedVisibility(visible = isFiltered) {
@@ -183,9 +187,7 @@ fun ItemSelector(
                                     .fillMaxHeight()
                                     .fillMaxWidth(.4f)
                                     .background(
-                                        color = MaterialTheme.colors.secondaryVariant.adjustTransparency(
-                                            .2F
-                                        )
+                                        color = MaterialTheme.colors.secondaryVariant.copy(alpha = .2F)
                                     )
                             ) {
                                 items(1) {
@@ -293,11 +295,6 @@ fun ItemSelectionParameters(
 }
 
 @Composable
-fun SortItem(sort: String, removeItem: () -> Unit) {
-
-}
-
-@Composable
 fun ItemSelectionFilters(
     filters: SnapshotStateList<String>,
     resetFilters: () -> Unit,
@@ -309,7 +306,7 @@ fun ItemSelectionFilters(
         modifier = Modifier
             .fillMaxHeight()
             .fillMaxWidth(.4f)
-            .background(color = MaterialTheme.colors.secondaryVariant.adjustTransparency(.2F))
+            .background(color = MaterialTheme.colors.secondaryVariant.copy(alpha = .2F))
     ) {
         Column {
             Row(
@@ -414,7 +411,7 @@ fun ItemSelectorHeading(
 ) {
     val focusManager = LocalFocusManager.current
     val isSearching = searchItem != ""
-    val hintColor = MaterialTheme.colors.onBackground.adjustTransparency(.5f)
+    val hintColor = MaterialTheme.colors.onBackground.copy(alpha = .5f)
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -529,7 +526,7 @@ fun ItemRow(name: String, isSelected: Boolean, onSelect: () -> Unit) {
             .padding(horizontal = 8.dp, vertical = 4.dp)
             .fillMaxWidth()
             .clip(Shapes.medium)
-            .background(if (isSelected) MaterialTheme.colors.secondary.adjustTransparency(.2f) else Color.Transparent)
+            .background(if (isSelected) MaterialTheme.colors.secondary.copy(alpha = .2f) else Color.Transparent)
             .height(50.dp)
             .clickable { onSelect() },
         verticalAlignment = Alignment.CenterVertically,
@@ -579,7 +576,7 @@ fun ItemRowPreview() {
 @Composable
 fun ItemSelectorPreview() {
     BadNutritionTheme {
-        ItemSelector(things = list, "Foods", true) {}
+        ItemSelector(true, "Foods", things = list) {}
     }
 }
 

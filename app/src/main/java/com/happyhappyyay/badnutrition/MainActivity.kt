@@ -1,21 +1,26 @@
 package com.happyhappyyay.badnutrition
 
 import android.os.Bundle
+import android.os.StrictMode
+import android.os.StrictMode.VmPolicy
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
 import com.happyhappyyay.badnutrition.database.NutritionDatabase
 import com.happyhappyyay.badnutrition.home.Home
 import com.happyhappyyay.badnutrition.home.HomeViewModel
 import com.happyhappyyay.badnutrition.ui.theme.BadNutritionTheme
+
 
 class MainActivity : ComponentActivity() {
     private lateinit var viewModel: HomeViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        StrictMode.setVmPolicy(
+            VmPolicy.Builder(StrictMode.getVmPolicy())
+                .detectLeakedClosableObjects()
+                .build()
+        )
         val application = this.application
         val database = NutritionDatabase.getInstance(this)
         viewModel = HomeViewModel(

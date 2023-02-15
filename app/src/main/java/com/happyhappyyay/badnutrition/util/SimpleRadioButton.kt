@@ -12,7 +12,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.happyhappyyay.badnutrition.ui.theme.BadNutritionTheme
 
 @Composable
 fun SimpleRadioButton(
@@ -37,13 +40,15 @@ fun SimpleRadioButton(
         Box(
             Modifier
                 .size(20.dp)
+
                 .clip(CircleShape)
+
                 .background(
                     ButtonDefaults
                         .buttonColors()
                         .backgroundColor(enabled = true).value
                 )
-                .shadow(4.dp, CircleShape),
+            ,
             contentAlignment = Alignment.Center
         ) {
             androidx.compose.animation.AnimatedVisibility(visible = isEnabled) {
@@ -54,6 +59,16 @@ fun SimpleRadioButton(
                         .background(MaterialTheme.colors.secondary)
                 )
             }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun PreviewSimpleRadioButton() {
+    BadNutritionTheme {
+        SimpleRadioButton(isEnabled = false) {
+
         }
     }
 }
