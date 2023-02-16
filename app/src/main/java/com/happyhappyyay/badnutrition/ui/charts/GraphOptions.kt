@@ -14,7 +14,7 @@ data class GraphOptions(
     val hasIndividualSelection: Boolean = false,
     val hasStraightLines: Boolean = false,
     val hasNoFillLineGraph: Boolean = false,
-    val hasLineOfBestFit: Boolean = true,
+    val hasLineOfBestFit: Boolean = false,
     val hasFoodShapeSelectors: Boolean = false,
     var graphId: Int = 0,
     val onEdit: (Int) -> Unit = {},
