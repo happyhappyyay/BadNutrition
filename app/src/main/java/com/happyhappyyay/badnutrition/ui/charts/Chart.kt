@@ -44,7 +44,7 @@ fun Chart(
             )
             when (type) {
                 GraphType.Bar -> GraphAttempt6(
-                    graphOptions = GraphOptions(GraphType.Bar, selectedInd = 2),
+                    graphOptions = GraphOptions(graphType = GraphType.Bar, selectedInd = 2),
                     onSelected = { bar ->
                         onSelected(
                             bar

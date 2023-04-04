@@ -4,8 +4,8 @@ import androidx.room.TypeConverter
 import com.happyhappyyay.badnutrition.data.food.Portion
 import com.happyhappyyay.badnutrition.data.nutrient.Goal
 import com.happyhappyyay.badnutrition.data.nutrient.NutrientValue
-import java.lang.Integer.parseInt
-import kotlin.text.StringBuilder
+import java.lang.Double.parseDouble
+import java.lang.Long.parseLong
 
 const val UNIT_DELIMITER = "␟"
 const val GROUP_DELIMITER = "␝"
@@ -49,7 +49,7 @@ class GoalStringConverter {
         @JvmStatic
         fun fromString(string: String): Goal {
             val goalValues = string.split(",")
-            return Goal(goalValues[0].toInt(), goalValues[1].toInt())
+            return Goal(goalValues[0].toDouble(), goalValues[1].toDouble())
         }
     }
 }
@@ -60,11 +60,11 @@ class ListNutrientValStringConverter {
         @JvmStatic
         fun fromListNutrientVal(nutrients: List<NutrientValue>): String {
             val sb = StringBuilder()
-            if(nutrients.isNotEmpty()){
+            if (nutrients.isNotEmpty()) {
                 nutrients.forEach { nutrient ->
                     sb.append("${nutrient.nameId}:${nutrient.value},")
                 }
-                sb.setLength(sb.length-1)
+                sb.setLength(sb.length - 1)
             }
             return sb.toString()
         }
@@ -73,13 +73,13 @@ class ListNutrientValStringConverter {
         @JvmStatic
         fun fromString(nutrients: String): List<NutrientValue> {
             val nutrientList = ArrayList<NutrientValue>()
-            if(nutrients.isNotEmpty()) {
+            if (nutrients.isNotEmpty()) {
                 nutrients.split(',').forEach { nutrient ->
                     val nutrientVals = nutrient.split(':')
                     nutrientList.add(
                         NutrientValue(
-                            parseInt(nutrientVals[0]),
-                            parseInt(nutrientVals[1])
+                            parseLong(nutrientVals[0]),
+                            parseDouble(nutrientVals[1])
                         )
                     )
                 }
@@ -95,11 +95,11 @@ class ListPortionStringConverter {
         @JvmStatic
         fun fromListPortion(portions: List<Portion>): String {
             val sb = StringBuilder()
-            if(portions.isNotEmpty()) {
+            if (portions.isNotEmpty()) {
                 portions.forEach { portion ->
-                    sb.append("${portion.nameId}$UNIT_DELIMITER${portion.amount}$UNIT_DELIMITER${portion.partition}$GROUP_DELIMITER")
+                    sb.append("${portion.id}$UNIT_DELIMITER${portion.foodId}$UNIT_DELIMITER${portion.amount}$UNIT_DELIMITER${portion.partitionId}$UNIT_DELIMITER${portion.dateMs}$GROUP_DELIMITER")
                 }
-                sb.setLength(sb.length-1)
+                sb.setLength(sb.length - 1)
             }
             return sb.toString()
         }
@@ -108,14 +108,16 @@ class ListPortionStringConverter {
         @JvmStatic
         fun fromString(portionString: String): List<Portion> {
             val portions = ArrayList<Portion>()
-            if(portionString.isNotEmpty()) {
+            if (portionString.isNotEmpty()) {
                 portionString.split(GROUP_DELIMITER).forEach { portion ->
                     val portionArr = portion.split(UNIT_DELIMITER)
                     portions.add(
                         Portion(
                             portionArr[0].toLong(),
-                            portionArr[1].toDouble(),
-                            portionArr[2].toInt()
+                            portionArr[1].toLong(),
+                            portionArr[2].toDouble(),
+                            portionArr[3].toLong(),
+                            portionArr[4].toLong()
                         )
                     )
                 }

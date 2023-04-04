@@ -72,7 +72,7 @@ fun convertDayToMilli(date: String): Long {
     }
 }
 
-fun incrementMilliDay(date: Long, days: Int): Long {
+fun incrementMilliDay(date: Long, days: Int = 1): Long {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         Instant.ofEpochMilli(date)
             .atZone(ZoneId.systemDefault())

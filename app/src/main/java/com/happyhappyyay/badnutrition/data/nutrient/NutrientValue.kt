@@ -9,6 +9,6 @@ package com.happyhappyyay.badnutrition.data.nutrient
  *
  */
 data class NutrientValue(
-    val nameId: Int,
-    val value: Int,
+    val nameId: Long,
+    val value: Double,
 )

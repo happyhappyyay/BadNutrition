@@ -1,4 +1,4 @@
-package com.happyhappyyay.badnutrition.util
+package com.happyhappyyay.badnutrition.ui.util
 
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect

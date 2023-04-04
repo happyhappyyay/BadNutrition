@@ -1,4 +1,4 @@
-package com.happyhappyyay.badnutrition.util
+package com.happyhappyyay.badnutrition.ui.util
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -43,13 +43,13 @@ fun SimpleLegend(
 @Composable
 private fun HorizontalLegend(isLineGraph: Boolean, legendItems: Array<LegendItem>) {
     LazyRow(
-        horizontalArrangement = Arrangement.SpaceEvenly,
+        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         items(legendItems){ legendItem ->
             SimpleLegendItem(
                 modifier = Modifier
-                    .padding(horizontal = 8.dp)
+                    .padding(end = 8.dp)
                     .widthIn(0.dp,250.dp),
                 isLineGraph = isLineGraph,
                 label = legendItem.label,
@@ -88,7 +88,7 @@ private fun SimpleLegendItem(modifier: Modifier = Modifier, isHorizontal: Boolea
         horizontalArrangement = Arrangement.Start
     ) {
         Box(modifier = Modifier
-            .padding(horizontal = 4.dp)
+            .padding(end = 4.dp)
             .width(25.dp),
             contentAlignment = Alignment.Center) {
             if(isLineGraph) {

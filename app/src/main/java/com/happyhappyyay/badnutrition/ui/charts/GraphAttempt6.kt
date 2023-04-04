@@ -32,11 +32,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.*
 import com.happyhappyyay.badnutrition.data.condensedValues
-import com.happyhappyyay.badnutrition.data.gList
+import com.happyhappyyay.badnutrition.data.sampleList
 import com.happyhappyyay.badnutrition.data.values
 import com.happyhappyyay.badnutrition.ui.theme.*
-import com.happyhappyyay.badnutrition.util.*
+import com.happyhappyyay.badnutrition.ui.util.*
+import com.happyhappyyay.badnutrition.util.DaysPerMonth
+import com.happyhappyyay.badnutrition.util.DaysPerMonthCum
+import com.happyhappyyay.badnutrition.util.MonthNames
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 import kotlin.system.measureTimeMillis
 
 const val BAR_DISTANCE = 40F
@@ -52,15 +56,17 @@ const val MinHeightFullValues = 285
 @Composable
 fun GraphAttempt6(
     modifier: Modifier = Modifier,
-    list: List<GraphData> = gList,
+    count: Int = 0,
+    list: List<GraphData> = sampleList,
     selectedBarInd: Int = -1,
     graphOptions: GraphOptions,
     onSelected: (BarArea?) -> Unit = {},
+    isEditSelected: Boolean = false,
     onEnlarge: () -> Unit = {},
     onEditable: () -> Unit = {},
     title: @Composable () -> Unit = {}
 ) {
-    Log.d("GRAPH", "recomposed")
+    Log.d("GRAPH", "recomposed $count")
     val graphType = graphOptions.graphType
     val selectedDataInd = graphOptions.selectedInd
     val correctForSpDp = with(LocalDensity.current) { 1.sp.toDp() }
@@ -82,20 +88,21 @@ fun GraphAttempt6(
     val rememberCoroutineScope = rememberCoroutineScope()
     val rememberInteractionSource = remember { MutableInteractionSource() }
     val time = measureTimeMillis {
+        val dataSize = if (graphType == GraphType.Bar) list.size else graphOptions.dataSize
+        val legendItems = createLegendItems(list, dataSize)
         val rememberScrollState = rememberScrollState()
         val screenWidth = LocalConfiguration.current.screenWidthDp.dp * .9F
         val screenWidthPx = with(LocalDensity.current) { screenWidth.toPx() }
         val graphStartPadDp = 11.dp
         val graphStartPadPx = with(LocalDensity.current) { graphStartPadDp.toPx() }
         val estimatedWidth = with(LocalDensity.current) {
-            ((2 * distancePx) * list.size + distancePx + graphStartPadPx).toDp()
+            ((2 * distancePx) * dataSize + distancePx + graphStartPadPx).toDp()
         }
         val width = if (screenWidth > estimatedWidth) screenWidth else estimatedWidth
         val topPadding = 7.5.dp
         val bottomPadding = 30.dp
-        var selected by rememberSaveable { mutableStateOf(false) }
         val colorTint by animateColorAsState(
-            targetValue = if (selected) MaterialTheme.colors.secondary.copy(alpha = 0.5f) else Color.Transparent
+            targetValue = if (isEditSelected) MaterialTheme.colors.secondary.copy(alpha = 0.5f) else Color.Transparent
         )
         val canvasHeight = height - 56.dp - 16.dp
         val strokeWidth = with(
@@ -114,30 +121,28 @@ fun GraphAttempt6(
             BarArea(
                 index = index,
                 data = item,
-                xStart = distancePx.times(index)
+                xStart = distancePx.times(index % dataSize)
                     .times(2) + distancePx.times(0.5F) + graphStartPadPx,
                 xEnd = distancePx.times(index).times(2) + distancePx.times(1.5F) + graphStartPadPx,
-                yStart = (heightPx - (heightPx - (topPadPx + bottomPadPx)) * (item.value / 100F)) - bottomPadPx,
+                yStart = (heightPx - (heightPx - (topPadPx + bottomPadPx)) * (abs(item.value) / 100F)) - bottomPadPx,
                 yEnd = 0F
             )
         }
+        Log.d("GraphAttempt6 BARS", "${barAreas.size}")
         val graphModifier = modifier
             .height(height)
-            .background(color = MaterialTheme.colors.primary.copy(.3f))
             .fillMaxSize()
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .border(1.dp, MaterialTheme.colors.onBackground, Shapes.small)
             .clip(Shapes.small)
             .background(MaterialTheme.colors.background)
         val gestureModifier = if (graphOptions.isEditMode) graphModifier.clickable {
-            selected = !selected
-            graphOptions.onEdit(if (selected) 1 else -1)
+            graphOptions.onEdit(count, !isEditSelected)
         }
         else graphModifier
             .indication(rememberInteractionSource, LocalIndication.current)
             .tapGestures(interactionSource = rememberInteractionSource, onLongPress = {
-                selected = !selected
-                graphOptions.onEdit(1)
+                graphOptions.onEdit(count, !isEditSelected)
             }, onDoubleTap = {
                 enlarged = !enlarged
                 onEnlarge()
@@ -164,18 +169,15 @@ fun GraphAttempt6(
         Box(
             modifier = gestureModifier
         ) {
-            GraphHeader(graphType = graphType, legendItems = emptyArray()) {
-                Row {
-                    Box(
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .size(30.dp),
-                    )
-                    title()
-                    Text("$rememberZoom")
-                }
-            }
+            Text("$rememberZoom")
             Box(modifier = Modifier.fillMaxSize()) {
+                GraphHeader(
+                    graphType = graphType,
+                    legendItems = legendItems,
+                    hasLegend = list.size > dataSize
+                ) {
+                    title()
+                }
                 Box(modifier = Modifier.padding(top = 54.dp - topPadding + 2.5.dp)) {
                     YAxisGraph(if (screenHeight >= MinHeightFullValues && enlarged) values else condensedValues)
                 }
@@ -258,6 +260,7 @@ fun GraphAttempt6(
                                             barAreas,
                                             selectedDataInd,
                                             selectedColor = color,
+                                            dataSize = dataSize,
                                             isScatterPlot = graphType == GraphType.Scatter,
                                             pointSize = pointSize,
                                             verticalPadding = verticalPadding,
@@ -268,7 +271,7 @@ fun GraphAttempt6(
                                     }
                                 }
                             }
-                            if (selectedDataInd != -1) {
+                            if (selectedDataInd != -1 && selectedDataInd < barAreas.size) {
 //                                TODO: ? maybe use rectangle boundaries to test overlap and adjust
                                 val pointSizeAdjustment =
                                     if (graphType != GraphType.Scatter) 1F else with(
@@ -342,7 +345,10 @@ fun GraphAttempt6(
                                         horizontalAlignment = Alignment.CenterHorizontally,
                                         verticalArrangement = Arrangement.Center
                                     ) {
-                                        Text("${bar.data.value.toInt()}00mcg", maxLines = 1)
+                                        val dataValue = bar.data.value
+                                        val dataValueAdjusted =
+                                            if (dataValue < 0) "~${abs(dataValue)}" else "$dataValue"
+                                        Text("${dataValueAdjusted}00mcg", maxLines = 1)
                                         val correctedInd = selectedDataInd + 24
                                         var month = 0
                                         var day = 1
@@ -376,7 +382,9 @@ fun GraphAttempt6(
                     .background(colorTint)
             ) {
                 AnimatedVisibility(
-                    visible = selected, enter = slideInHorizontally(), exit = slideOutHorizontally()
+                    visible = isEditSelected,
+                    enter = slideInHorizontally(),
+                    exit = slideOutHorizontally()
                 ) {
                     Box(
                         modifier = Modifier
@@ -397,14 +405,28 @@ fun GraphAttempt6(
 
 @Composable
 fun GraphHeader(
+    modifier: Modifier = Modifier,
     graphType: GraphType,
     legendItems: Array<LegendItem>,
     hasLegend: Boolean = false,
     title: @Composable () -> Unit
 ) {
-    title()
-    AnimatedVisibility(visible = hasLegend) {
-        SimpleLegend(isLineLegend = graphType == GraphType.Line, legendItems = legendItems)
+    Column(modifier = modifier) {
+        Row {
+            Box(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .size(30.dp),
+            )
+            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                title()
+                AnimatedVisibility(visible = hasLegend) {
+                    SimpleLegend(
+                        isLineLegend = graphType == GraphType.Line, legendItems = legendItems
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -473,41 +495,13 @@ fun XAxisText(
     }
 }
 
-fun calculateLineOfBestFit(offsets: List<Offset>): Pair<Offset, Offset> {
-    var xBar = 0F
-    var yBar = 0F
-    offsets.forEach { offset ->
-        xBar += offset.x
-        yBar += offset.y
-    }
-    xBar /= offsets.size
-    yBar /= offsets.size
-
-    var ySlopeNum = 0F
-    var ySlopeDen = 0F
-    offsets.forEach { offset ->
-        val xFromMean = offset.x - xBar
-        ySlopeNum += xFromMean * offset.y - yBar
-        ySlopeDen += xFromMean * xFromMean
-    }
-
-    //add 1 to avoid divide by 0
-    val yIntercept = (ySlopeNum + 1) / (ySlopeDen + 1)
-    val firstX = offsets.first().x
-    val lastX = offsets.last().x
-
-    return Pair(
-        Offset(firstX, yIntercept * firstX + yBar), Offset(lastX, yIntercept * lastX + yBar)
-    )
-}
-
 @Preview
 @Composable
 fun PreviewGraphAttempt6() {
     BadNutritionTheme {
         GraphAttempt6(
             graphOptions = GraphOptions(
-                GraphType.Bar, ZoomDistanceOption.Day, false, 1
+                graphType = GraphType.Bar
             )
         )
     }
@@ -524,9 +518,10 @@ fun DrawScope.drawBarGraph5(
         val barWidth = if (barAreas.isEmpty()) 0F else barAreas[0].xEnd - barAreas[0].xStart
         val barExtSize = barWidth.div(12)
         barAreas.forEach { bar ->
+            val dataValue = abs(bar.data.value)
             val distFromGraphBottom = (size.height - bottomPadPx) - bar.yStart
             val isSelected = bar.index == selectedBarInd
-            if (bar.data.value > 0) {
+            if (dataValue > 0.9F) {
                 drawRoundRect(
                     color = Color.Black.copy(.2f),
                     topLeft = Offset(
@@ -563,6 +558,7 @@ fun DrawScope.drawPointGraph5(
     barAreas: List<BarArea>,
     selectedBarInd: Int,
     selectedColor: Color,
+    dataSize: Int,
     isScatterPlot: Boolean,
     pointSize: Float = -1F,
     verticalPadding: Pair<Float, Float>,
@@ -570,158 +566,151 @@ fun DrawScope.drawPointGraph5(
     hasLineOfBestFit: Boolean = false,
     hasFoodShapes: Boolean = false
 ) {
+//    TODO: Animate from 0 to 1 multiply by width rightside
     val graphCreationTime = measureTimeMillis {
         val xTickMarkSize = 6.dp.toPx()
         val paint = Paint()
         paint.textSize = 12.sp.toPx()
         val (topPadPx, bottomPadPx) = verticalPadding
+        val dataSets = (barAreas.size / dataSize)
         val selectedBarArea = barAreas.find { bar ->
             bar.index == selectedBarInd
         }
+//        TODO: Take care of recomposition? suspended?
+        if (barAreas.size >= dataSize) {
+            Log.d("PointGRAPH", "${barAreas.size} $dataSize")
 
 //        X-axis tick marks
 
-        if (hasAxisTicks) {
-            barAreas.forEach { bar ->
-                drawLine(
-                    color = Color.Black,
-                    strokeWidth = 1.dp.toPx(),
-                    start = Offset(bar.xStart, size.height - bottomPadPx),
-                    end = Offset(bar.xStart, size.height - bottomPadPx + (xTickMarkSize / 2))
-                )
-            }
-            for (i in 0 until DaysPerMonthCum.size - 1) {
-                drawLine(
-                    color = Color.Black, strokeWidth = 1.dp.toPx(), start = Offset(
-                        barAreas[DaysPerMonthCum[i] - 24].xStart, size.height - bottomPadPx
-                    ), end = Offset(
-                        barAreas[DaysPerMonthCum[i] - 24].xStart,
-                        size.height - bottomPadPx + xTickMarkSize
+            if (hasAxisTicks) {
+
+                for (i in 0 until dataSize) {
+                    val bar = barAreas[i]
+                    drawLine(
+                        color = Color.Black,
+                        strokeWidth = 1.dp.toPx(),
+                        start = Offset(bar.xStart, size.height - bottomPadPx),
+                        end = Offset(bar.xStart, size.height - bottomPadPx + (xTickMarkSize / 2))
                     )
+                }
+////            TODO: Change X axis labels to correspond to actual
+//            for (i in 0 until DaysPerMonthCum.size - 1) {
+//                drawLine(
+//                    color = Color.Black, strokeWidth = 1.dp.toPx(), start = Offset(
+//                        barAreas[DaysPerMonthCum[i]].xStart, size.height - bottomPadPx
+//                    ), end = Offset(
+//                        barAreas[DaysPerMonthCum[i]].xStart,
+//                        size.height - bottomPadPx + xTickMarkSize
+//                    )
+//                )
+//            }
+            }
+
+            if (selectedBarArea != null) {
+                drawLine(
+                    Purple500,
+                    Offset(selectedBarArea.xStart, topPadPx),
+                    Offset(selectedBarArea.xStart, size.height - bottomPadPx),
+                    1.dp.toPx()
                 )
             }
-        }
+            var count = 0
+            for (j in 0 until dataSets) {
+                val points = mutableListOf<Offset>()
+                val color = GraphBarColors[j]
+                for (i in 0 until dataSize) {
+                    val bar = barAreas[count++]
 
-        if (selectedBarArea != null) {
-            drawLine(
-                Purple500,
-                Offset(selectedBarArea.xStart, topPadPx),
-                Offset(selectedBarArea.xStart, size.height - bottomPadPx),
-                1.dp.toPx()
-            )
-        }
-        val points = barAreas.map { bar ->
-
-            if (isScatterPlot) {
-                drawCircle(
-                    color = Color.Black,
-                    center = Offset(bar.xStart, bar.yStart),
-                    radius = pointSize - 5
-                )
-            }
-            Offset(bar.xStart, bar.yStart)
-        }
-        if (!isScatterPlot) {
-            val controlPoints1 = mutableListOf<Offset>()
-            val controlPoints2 = mutableListOf<Offset>()
-
-            for (i in 1 until points.size) {
-                controlPoints1.add(Offset((points[i].x + points[i - 1].x) / 2, points[i - 1].y))
-                controlPoints2.add(Offset((points[i].x + points[i - 1].x) / 2, points[i].y))
-            }
-
-            val stroke = Path().apply {
-                reset()
-                moveTo(points.first().x, points.first().y)
-                for (i in 0 until points.size - 1) {
-                    cubicTo(
-                        controlPoints1[i].x,
-                        controlPoints1[i].y,
-                        controlPoints2[i].x,
-                        controlPoints2[i].y,
-                        points[i + 1].x,
-                        points[i + 1].y
+                    if (isScatterPlot) {
+                        drawCircle(
+                            color = color,
+                            center = Offset(bar.xStart, bar.yStart),
+                            radius = pointSize - 5
+                        )
+                    }
+                    points.add(Offset(bar.xStart, bar.yStart))
+                }
+                if (!isScatterPlot) {
+                    val stroke = generateLinePath(points)
+                    drawPath(
+                        stroke, color = color, style = Stroke(
+                            width = 10f, cap = StrokeCap.Round
+                        )
                     )
+                    if (dataSets == 1) {
+                        val fillPath = Path()
+                        fillPath.addPath(stroke)
+                        fillPath.lineTo(points.last().x, size.height - bottomPadPx - 1.5.dp.toPx())
+                        fillPath.lineTo(points.first().x, size.height - bottomPadPx - 1.5.dp.toPx())
+                        fillPath.close()
+                        drawPath(
+                            fillPath,
+                            brush = Brush.verticalGradient(
+                                listOf(
+                                    color.copy(.8F), color.copy(.2f)
+                                ), startY = size.height / 3
+                            ),
+                        )
+                    }
+                }
+
+                if (isScatterPlot && hasLineOfBestFit) {
+                    val bestFitLine = calculateLineOfBestFit(points)
+                    drawLine(color, bestFitLine.first, bestFitLine.second)
                 }
             }
 
-            drawPath(
-                stroke, color = Color.Black, style = Stroke(
-                    width = 5f, cap = StrokeCap.Round
-                )
-            )
-
-            val fillPath = android.graphics.Path(stroke.asAndroidPath()).asComposePath().apply {
-                lineTo(points.last().x, size.height - bottomPadPx - 1.5.dp.toPx())
-                lineTo(points.first().x, size.height - bottomPadPx - 1.5.dp.toPx())
-                close()
+            if (selectedBarInd != -1 && selectedBarInd < barAreas.size) {
+                val pos = Offset(barAreas[selectedBarInd].xStart, barAreas[selectedBarInd].yStart)
+                drawCircle(Purple500.copy(.4f), (pointSize - 5) * 3, pos)
+                if (hasFoodShapes) {
+                    drawPath(
+                        drawApplePath(pos, Size(2 * pointSize, 2 * pointSize), offsetCenter = true),
+                        color = Color.Red
+                    )
+                    drawPath(
+                        drawApplePath(pos, Size(2 * pointSize, 2 * pointSize), offsetCenter = true),
+                        style = Stroke(width = 1.dp.toPx()),
+                        color = Color.Black
+                    )
+                    drawPath(
+                        drawAppleStemPath(
+                            pos, Size(2 * pointSize, 2 * pointSize), offsetCenter = true
+                        ), style = Stroke(width = 1.dp.toPx()), color = Color.Black
+                    )
+                } else {
+                    drawCircle(Color.White, pointSize, pos)
+//                TODO: Color to proper line color
+                    drawCircle(Color.Black, pointSize, pos, style = Stroke(2.dp.toPx()))
+                }
             }
 
-            drawPath(
-                fillPath,
-                brush = Brush.verticalGradient(
-                    listOf(
-                        Color.Transparent, Purple200
-                    ), startY = size.height / 3
-                ),
-            )
-        }
-
-        if (isScatterPlot && hasLineOfBestFit) {
-            val bestFitLine = calculateLineOfBestFit(points)
-            drawLine(Color.Black, bestFitLine.first, bestFitLine.second)
-        }
-
-        if (selectedBarInd != -1) {
-            val pos = points[selectedBarInd]
-            drawCircle(Purple500.copy(.4f), (pointSize - 5) * 3, pos)
-            if (hasFoodShapes) {
-                drawPath(
-                    drawApplePath(pos, Size(2 * pointSize, 2 * pointSize), offsetCenter = true),
-                    color = Color.Red
-                )
-                drawPath(
-                    drawApplePath(pos, Size(2 * pointSize, 2 * pointSize), offsetCenter = true),
-                    style = Stroke(width = 1.dp.toPx()),
-                    color = Color.Black
-                )
-                drawPath(
-                    drawAppleStemPath(
-                        pos, Size(2 * pointSize, 2 * pointSize), offsetCenter = true
-                    ), style = Stroke(width = 1.dp.toPx()), color = Color.Black
-                )
-            } else {
-                drawCircle(Color.White, pointSize, pos)
-                drawCircle(Color.Black, pointSize, pos, style = Stroke(2.dp.toPx()))
-            }
-        }
-
-        drawIntoCanvas {
-            val textHeight = size.height - verticalPadding.second / 3
-            val name = MonthNames[1]
-            val textWidth = paint.measureText(name)
-            val centerAdjustment = textWidth / 2
-            val x = barAreas[DaysPerMonthCum[1 - 1] - 24].xStart - centerAdjustment
-            val xStart = if (x <= 0F) 0F else x
-            it.nativeCanvas.drawText(
-                name, xStart, textHeight, paint
-            )
-            for (i in 2 until MonthNames.size) {
-                val name1 = MonthNames[i]
-                val textWidth1 = paint.measureText(name1)
-                val centerAdjustment1 = textWidth1 / 2
-                it.nativeCanvas.drawText(
-                    name1,
-                    barAreas[DaysPerMonthCum[i - 1] - 24].xStart - centerAdjustment1,
-                    textHeight,
-                    paint
-                )
+            drawIntoCanvas {
+                val textHeight = size.height - verticalPadding.second / 3
+                val name = MonthNames[1]
+                val textWidth = paint.measureText(name)
+                val centerAdjustment = textWidth / 2
+//            val x = barAreas[DaysPerMonthCum[1 - 1] - 24].xStart - centerAdjustment
+//            val xStart = if (x <= 0F) 0F else x
+//            it.nativeCanvas.drawText(
+//                name, xStart, textHeight, paint
+//            )
+//            for (i in 2 until MonthNames.size) {
+//                val name1 = MonthNames[i]
+//                val textWidth1 = paint.measureText(name1)
+//                val centerAdjustment1 = textWidth1 / 2
+//                it.nativeCanvas.drawText(
+//                    name1,
+//                    barAreas[DaysPerMonthCum[i - 1] - 24].xStart - centerAdjustment1,
+//                    textHeight,
+//                    paint
+//                )
+//            }
             }
         }
     }
     drawIntoCanvas {
-        it.nativeCanvas.drawText(
-            "$graphCreationTime ${barAreas.size}",
+        it.nativeCanvas.drawText("$graphCreationTime ${barAreas.size}",
             200F,
             200F,
             Paint().apply { textSize = 50F })

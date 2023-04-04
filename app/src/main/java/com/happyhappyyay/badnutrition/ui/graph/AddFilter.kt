@@ -36,7 +36,7 @@ import com.happyhappyyay.badnutrition.data.filter.NutritionFilter
 import com.happyhappyyay.badnutrition.ui.home.nutrientItems
 import com.happyhappyyay.badnutrition.ui.home.unitItems
 import com.happyhappyyay.badnutrition.ui.theme.BadNutritionTheme
-import com.happyhappyyay.badnutrition.util.SimpleDialogHeading
+import com.happyhappyyay.badnutrition.ui.util.SimpleDialogHeading
 import com.happyhappyyay.badnutrition.util.currentDayString
 
 enum class FilterTypes(s: String) {

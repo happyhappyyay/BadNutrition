@@ -2,7 +2,6 @@ Calendar: Locale Monday/Sunday first day
 typo at androidx.compose.ui.window AndroidDialog.android.kt Dialog
 typo at java.lang.IllegalStateException: Horizontally scrollable component was measured with an infinity maximum width constraints, which is disallowed. One of the common reasons is nesting layouts like LazyRow and Row(Modifier.horizontalScroll()). If you want to add a header before the list of items please add a header as a separate item() before the main items() inside the LazyRow scope. There are could be other reasons
 State info: https://dev.to/zachklipp/two-mutables-dont-make-a-right-2kgp
-Smart Tool Factory: GOOD tutorials?
 
 In-Progress:
     Concepts:

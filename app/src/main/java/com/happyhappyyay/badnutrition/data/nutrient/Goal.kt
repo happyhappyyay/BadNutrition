@@ -7,6 +7,6 @@ package com.happyhappyyay.badnutrition.data.nutrient
  * @property max the maximum intake value
  */
 data class Goal(
-    val min: Int = 0,
-    val max: Int = -1,
+    val min: Double = 0.0,
+    val max: Double = -1.0,
 )

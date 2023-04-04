@@ -1,4 +1,4 @@
-package com.happyhappyyay.badnutrition.util
+package com.happyhappyyay.badnutrition.ui.util
 
 import androidx.compose.foundation.gestures.*
 import androidx.compose.foundation.interaction.MutableInteractionSource

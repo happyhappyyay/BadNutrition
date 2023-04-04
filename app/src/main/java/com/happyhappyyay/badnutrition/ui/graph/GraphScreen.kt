@@ -2,13 +2,11 @@ package com.happyhappyyay.badnutrition.ui.graph
 
 import android.util.Log
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -24,71 +22,160 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.happyhappyyay.badnutrition.R
-import com.happyhappyyay.badnutrition.data.gList
 import com.happyhappyyay.badnutrition.ui.charts.*
 import com.happyhappyyay.badnutrition.ui.theme.BadNutritionTheme
 import com.happyhappyyay.badnutrition.ui.theme.chipRoundedShape
-import com.happyhappyyay.badnutrition.util.SelectionItem
+import com.happyhappyyay.badnutrition.ui.util.SelectionItem
 import kotlinx.coroutines.launch
-
-enum class GraphSelectionType {
-    Foods, Nutrients, Partitions, Time, None
-}
-
-enum class CategoryType {
-    Food, Nutrient, Partition, Time
-}
-
-enum class GraphMeasurementType {
-    Amount, Entries, Exists, Percent, Serving
-}
-
-enum class GraphCalculationType {
-    Max, Mean, Median, Min, Mode, Sum
-}
-
-enum class GraphOrderType {
-    None, Largest, Smallest
-}
 
 val dropDownMenuWidth = 125.dp
 
-fun createNestedDropdownList(): List<List<String>> {
-    return listOf(
-        GraphType.values().map { it.name },
-        CategoryType.values().map { it.name },
-        GraphCalculationType.values().map { it.name },
-        GraphMeasurementType.values().map { it.name },
-        GraphOrderType.values().map { it.name },
-    )
+@Composable
+fun GraphScreen(viewModel: GraphViewModel = viewModel()) {
+    val uiState by viewModel.graphUiState.collectAsState()
+    val graphData by viewModel.graphData.collectAsState()
+    val editData by viewModel.editUiState.collectAsState()
+    val loading by viewModel.loading.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
+    val scrollState = rememberLazyListState()
+
+    Log.d("GRAPH SCREEN", "recomposed")
+    if (editData.isEditMode) {
+        BackHandler {
+            viewModel.resetEditSelection()
+        }
+    }
+    Column {
+        val graphOptions = GraphOptions(graphType = uiState.graphType,
+            dataSize = viewModel.timesSize,
+            selectedInd = uiState.selectedBar,
+            isEditMode = editData.isEditMode,
+            hasXAxisTicks = true,
+            onEdit = { count, newEditVal ->
+                viewModel.onEditSelection(count, newEditVal)
+            },
+            onZoom = { zoomAction ->
+                coroutineScope.launch {
+                    scrollState.scroll(MutatePriority.PreventUserInput) {
+                        zoomAction()
+                    }
+                }
+            })
+        LazyColumn(
+            state = scrollState, modifier = Modifier
+                .background(MaterialTheme.colors.primary.copy(alpha = .3F))
+                .padding(top = 50.dp)
+                .fillMaxHeight()
+        ) {
+            item {
+                Spacer(
+                    modifier = Modifier
+                        .height(50.dp)
+                        .fillMaxWidth()
+                )
+            }
+//            TODO: animate removal of items opt-in or create list for animated visibility
+            itemsIndexed(graphData) { count, data ->
+                ChosenChart(
+                    modifier = Modifier.weight(1f),
+                    data = data,
+                    count = count,
+                    editable = editData.editItems[count],
+                    graphOptions = graphOptions,
+                    heading = "Summary of The Greatest Nutrients Ever!",
+                    onEnlarge = {
+                        coroutineScope.launch {
+                            scrollState.animateScrollToItem(count + 1)
+                        }
+                    },
+                    onSelectBar = {
+                        viewModel.onBarSelected(it?.index ?: -1)
+                    },
+                ) {
+
+                }
+            }
+            item {
+                DonutChart()
+            }
+        }
+    }
+
+    AppBar(
+        isEditMode = editData.isEditMode,
+        clearEditCount = { viewModel.resetEditSelection() },
+        onDeleteGraphData = { viewModel.onDeleteSelected() },
+        onJoinGraphData = { viewModel.onMergeSelected() }
+    ) { expanded ->
+        GraphController(expanded = expanded,
+            menuTitles = viewModel.createVisibleMenuItemsList(),
+            menuItems = viewModel.nestedMenuSelection,
+            onGraphTypeSelected = { type -> viewModel.onGraphTypeSelected(type) },
+            onGraphCategorySelected = { category ->
+                viewModel.onCategoryTypeSelected(
+                    category
+                )
+            },
+            onGraphCalculationSelected = { calculation ->
+                viewModel.onCalculationTypeSelected(
+                    calculation
+                )
+            },
+            onGraphMeasurementSelected = { measurement ->
+                viewModel.onGraphMeasurementSelected(
+                    measurement
+                )
+            },
+            onGraphOrderSelected = { order -> viewModel.onGraphOrderSelected(order) },
+            onMenuSelected = { menu -> viewModel.onMenuSelected(menu) })
+    }
+
+    AnimatedVisibility(
+        visible = uiState.selectionMenu != GraphSelectionType.None,
+        enter = slideInVertically(initialOffsetY = { fullHeight -> fullHeight }),
+        exit = slideOutVertically(targetOffsetY = { fullHeight -> fullHeight })
+    ) {
+        ItemSelector(
+            needsFilter = uiState.selectionMenu == GraphSelectionType.Foods,
+            title = uiState.selectionMenu.name,
+            things = list
+        ) {
+            viewModel.onMenuSelected(GraphSelectionType.None)
+        }
+    }
+
+    AnimatedVisibility(visible = loading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable { }, contentAlignment = Alignment.Center
+        ) {
+            Box(
+                modifier = Modifier
+                    .background(
+                        color = MaterialTheme.colors.primary.copy(0.2F),
+                        shape = MaterialTheme.shapes.medium
+                    )
+                    .padding(8.dp)
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+    }
 }
 
 @Composable
-fun GraphScreen() {
-    val coroutineScope = rememberCoroutineScope()
-    val rememberScrollState = rememberLazyListState()
-    var rememberGraphType by rememberSaveable { mutableStateOf(GraphType.Scatter) }
-    var rememberGroupType by rememberSaveable { mutableStateOf(CategoryType.Nutrient) }
-    var rememberCalculationType by rememberSaveable { mutableStateOf(GraphCalculationType.Mean) }
-    var rememberMeasureType by rememberSaveable { mutableStateOf(GraphMeasurementType.Percent) }
-    var rememberOrderType by rememberSaveable { mutableStateOf(GraphOrderType.None) }
-    var rememberEditCount by rememberSaveable { mutableStateOf(0) }
-    val rememberEditMode by remember { derivedStateOf { rememberEditCount > 0 } }
-    var rememberIsControlVisible by remember { mutableStateOf(true) }
-    var rememberZoomMode by rememberSaveable { mutableStateOf(ZoomDistanceOption.Day) }
-    var rememberIsGraphMenuDropped by remember { mutableStateOf(false) }
-    var rememberSelectionItem by rememberSaveable { mutableStateOf(GraphSelectionType.None) }
-    var selectedBar by rememberSaveable { mutableStateOf(-1) }
-    val isControlVisible = rememberIsControlVisible && !rememberEditMode
-
-    Log.d("GRAPH SCREEN", "recomposed")
-    Column(modifier = Modifier.background(MaterialTheme.colors.background)) {
-        if (rememberEditMode) {
-            BackHandler {
-                rememberEditCount = 0
-            }
-        }
+fun AppBar(
+    isEditMode: Boolean,
+    clearEditCount: () -> Unit,
+    onJoinGraphData: () -> Unit,
+    onDeleteGraphData: () -> Unit,
+    expandedContent: @Composable (Boolean) -> Unit
+) {
+    var expanded by remember { mutableStateOf(true) }
+    Column {
         Box(
             modifier = Modifier
                 .background(MaterialTheme.colors.primaryVariant)
@@ -100,7 +187,7 @@ fun GraphScreen() {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 IconButton(onClick = {
-                    if(rememberEditMode) rememberEditCount = 0
+                    if (isEditMode) clearEditCount()
                 }) {
                     Icon(
                         imageVector = Icons.Rounded.ArrowBack,
@@ -108,31 +195,31 @@ fun GraphScreen() {
                         contentDescription = ""
                     )
                 }
-                TextButton(enabled = !rememberEditMode, onClick = { rememberIsControlVisible = !rememberIsControlVisible }) {
+                TextButton(enabled = !isEditMode, onClick = { expanded = !expanded }) {
                     Text(
-                        if (rememberEditMode) "Edit Graphs" else "Graphs",
+                        if (isEditMode) "Edit Graphs" else "Graphs",
                         style = MaterialTheme.typography.h6,
                         color = MaterialTheme.colors.onPrimary
                     )
-                    if(!rememberEditMode){
+                    if (!isEditMode) {
                         Icon(
                             modifier = Modifier.padding(top = 4.dp),
-                            imageVector = if(rememberIsControlVisible) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
+                            imageVector = if (expanded) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
                             tint = MaterialTheme.colors.onPrimary,
                             contentDescription = null
                         )
                     }
                 }
                 Row {
-                    if (rememberEditMode) {
-                        IconButton(onClick = { /*TODO Join items in the list*/ }) {
+                    if (isEditMode) {
+                        IconButton(onClick = { onJoinGraphData() }) {
                             Icon(
                                 painter = painterResource(id = R.drawable.join_black_24),
                                 tint = MaterialTheme.colors.onPrimary,
                                 contentDescription = null
                             )
                         }
-                        IconButton(onClick = { /*TODO Remove items from List*/ }) {
+                        IconButton(onClick = { onDeleteGraphData() }) {
                             Icon(
                                 imageVector = Icons.Rounded.Delete,
                                 tint = MaterialTheme.colors.onPrimary,
@@ -140,9 +227,7 @@ fun GraphScreen() {
                             )
                         }
                     } else {
-                        IconButton(onClick = {
-                            rememberIsGraphMenuDropped = !rememberIsGraphMenuDropped
-                        }) {
+                        IconButton(onClick = {}) {
                             Icon(
                                 imageVector = Icons.Rounded.Settings,
                                 tint = MaterialTheme.colors.onPrimary,
@@ -153,102 +238,66 @@ fun GraphScreen() {
                 }
             }
         }
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-
-        ) {
-            val graphOptions = GraphOptions(graphType = rememberGraphType,
-                selectedInd = selectedBar,
-                isEditMode = rememberEditMode,
-                hasXAxisTicks = true,
-                onEdit = { count -> rememberEditCount += count },
-                onZoom = { zoomAction ->
-                    coroutineScope.launch {
-                        rememberScrollState.scroll(MutatePriority.PreventUserInput) {
-                            zoomAction()
-                        }
-                    }
-                })
-            Column {
-                AnimatedVisibility(visible = isControlVisible) {
-                    HorizontalMenu(menuTitles = listOf(
-                        rememberGraphType.name,
-                        rememberGroupType.name,
-                        rememberCalculationType.name,
-                        rememberMeasureType.name,
-                        rememberOrderType.name
-                    ),
-                        menuItems = createNestedDropdownList(),
-                        selectionTitles = GraphSelectionType.values()
-                            .mapIndexed { index, graphSelection ->
-                                val iconResource = when (index) {
-                                    0 -> R.drawable.round_restaurant_black_20
-                                    1 -> R.drawable.round_nutrition_black_20
-                                    2 -> R.drawable.round_stack_black_20
-                                    3 -> R.drawable.round_date_range_black_20
-                                    else -> R.drawable.round_list_alt_black_24
-                                }
-                                SelectionItem(graphSelection.name, iconResource)
-                            },
-                        onSelectMenuItem = { ind, selectedItem ->
-                            when (ind) {
-                                0 -> rememberGraphType = GraphType.valueOf(selectedItem)
-                                1 -> rememberGroupType = CategoryType.valueOf(selectedItem)
-                                2 -> rememberCalculationType =
-                                    GraphCalculationType.valueOf(selectedItem)
-                                3 -> rememberMeasureType =
-                                    GraphMeasurementType.valueOf(selectedItem)
-                                4 -> rememberOrderType = GraphOrderType.valueOf(selectedItem)
-                                else -> {}
-                            }
-                        },
-                        onSelectSelectionItem = { selectedItem ->
-                            rememberSelectionItem = GraphSelectionType.valueOf(selectedItem)
-                        })
-                }
-                LazyColumn(
-                    state = rememberScrollState, modifier = Modifier.fillMaxHeight()
-                ) {
-                    items(10) { count ->
-                        ChosenChart(
-                            modifier = Modifier.weight(1f),
-                            graphOptions = graphOptions,
-                            heading = "Summary of The Greatest Nutrients Ever!",
-                            onEnlarge = {
-                                coroutineScope.launch {
-                                    rememberScrollState.animateScrollToItem(count)
-                                    Log.d("GRAPHSCREEN", "$count")
-                                }
-                            },
-                            onSelectBar = {
-                                selectedBar = it?.index ?: -1
-                            },
-                        ) {
-
-                        }
-                    }
-                    item {
-                        DonutChart()
-                    }
-                }
-            }
-        }
+        expandedContent(expanded && !isEditMode)
     }
+}
 
+@Composable
+fun GraphController(
+    expanded: Boolean,
+    menuTitles: List<String>,
+    menuItems: List<List<String>>,
+    onGraphTypeSelected: (GraphType) -> Unit,
+    onGraphCategorySelected: (GraphCategoryType) -> Unit,
+    onGraphCalculationSelected: (GraphCalculationType) -> Unit,
+    onGraphMeasurementSelected: (GraphMeasurementType) -> Unit,
+    onGraphOrderSelected: (GraphOrderType) -> Unit,
+    onMenuSelected: (GraphSelectionType) -> Unit
+) {
     AnimatedVisibility(
-        visible = rememberSelectionItem != GraphSelectionType.None,
-        enter = slideInVertically(initialOffsetY = { fullHeight -> fullHeight }),
-        exit = slideOutVertically(targetOffsetY = { fullHeight -> fullHeight })
+        visible = expanded, enter = expandVertically(), exit = shrinkVertically()
     ) {
-        ItemSelector(
-            needsFilter = rememberSelectionItem == GraphSelectionType.Foods,
-            title = rememberSelectionItem.name,
-            things = list
-        ) {
-            rememberSelectionItem = GraphSelectionType.None
-        }
+        HorizontalMenu(menuTitles = menuTitles,
+            menuItems = menuItems,
+            selectionTitles = GraphSelectionType.values().mapIndexed { index, graphSelection ->
+                val iconResource = when (index) {
+                    0 -> R.drawable.round_restaurant_black_20
+                    1 -> R.drawable.round_nutrition_black_20
+                    2 -> R.drawable.round_stack_black_20
+                    3 -> R.drawable.round_date_range_black_20
+                    else -> R.drawable.round_list_alt_black_24
+                }
+                SelectionItem(graphSelection.name, iconResource)
+            },
+            onSelectMenuItem = { ind, selectedItem ->
+                when (ind) {
+                    0 -> onGraphTypeSelected(GraphType.valueOf(selectedItem))
+                    1 -> onGraphCategorySelected(
+                        GraphCategoryType.valueOf(
+                            selectedItem
+                        )
+                    )
+                    2 -> onGraphCalculationSelected(
+                        GraphCalculationType.valueOf(
+                            selectedItem
+                        )
+                    )
+                    3 -> onGraphMeasurementSelected(
+                        GraphMeasurementType.valueOf(
+                            selectedItem
+                        )
+                    )
+                    4 -> onGraphOrderSelected(
+                        GraphOrderType.valueOf(
+                            selectedItem
+                        )
+                    )
+                    else -> {}
+                }
+            },
+            onSelectSelectionItem = { selectedItem ->
+                onMenuSelected(GraphSelectionType.valueOf(selectedItem))
+            })
     }
 }
 
@@ -267,7 +316,9 @@ fun HorizontalMenu(
             .padding(top = 8.dp, bottom = 16.dp)
     ) {
         menuTitles.forEachIndexed { ind, title ->
-            HorizontalMenuDropChip(selectedText = title, menuItems = menuItems[ind]) { selection ->
+            HorizontalMenuDropChip(
+                selectedText = title, menuItems = menuItems[ind]
+            ) { selection ->
                 onSelectMenuItem(ind, selection)
             }
         }
@@ -399,9 +450,11 @@ fun GraphTextMenuItem(
 @Composable
 fun ChosenChart(
     modifier: Modifier = Modifier,
-    data: Array<Float> = emptyArray(),
+    count: Int,
+    data: List<GraphData> = emptyList(),
     heading: String = "Summary",
     graphOptions: GraphOptions,
+    editable: Boolean,
     onEnlarge: () -> Unit,
     onSelectBar: (BarArea?) -> Unit,
     menuContent: @Composable () -> Unit
@@ -409,7 +462,10 @@ fun ChosenChart(
     when (graphOptions.graphType) {
         GraphType.Bar -> {
             GraphAttempt6(modifier,
+                count = count,
+                list = data.ifEmpty { emptyList() },
                 graphOptions = graphOptions,
+                isEditSelected = editable,
                 onEnlarge = onEnlarge,
                 onSelected = { bar -> onSelectBar(bar) }) {
                 Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
@@ -425,39 +481,39 @@ fun ChosenChart(
                         color = MaterialTheme.colors.onBackground.copy(alpha = .5f)
                     )
                 }
-                Box(modifier = Modifier.padding(horizontal = 8.dp)) {
-//                    menuContent()
-                }
             }
         }
         GraphType.Line -> {
             GraphAttempt6(modifier,
                 graphOptions = graphOptions,
+                list = data,
+                count = count,
+                isEditSelected = editable,
                 onEnlarge = onEnlarge,
                 onSelected = { bar -> onSelectBar(bar) }) {
                 Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)) {
                     Text(
-                        heading, fontSize = 18.sp, maxLines = 1, overflow = TextOverflow.Ellipsis
+                        data[0].name,
+                        fontSize = 18.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
 
-                }
-                Box(modifier = Modifier.padding(horizontal = 8.dp)) {
-//                    menuContent()
                 }
             }
         }
         GraphType.Scatter -> {
             GraphAttempt6(modifier,
                 graphOptions = graphOptions,
+                list = data,
+                count = count,
+                isEditSelected = editable,
                 onEnlarge = onEnlarge,
                 onSelected = { bar -> onSelectBar(bar) }) {
                 Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)) {
                     Text(
                         heading, fontSize = 18.sp, maxLines = 1, overflow = TextOverflow.Ellipsis
                     )
-                }
-                Box(modifier = Modifier.padding(horizontal = 8.dp)) {
-//                    menuContent()
                 }
             }
         }

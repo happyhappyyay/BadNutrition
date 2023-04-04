@@ -16,9 +16,9 @@ data class Nutrient(
     val goal: Goal
 )
 
-fun calcNutrientValPercent(value: Int, minGoal : Int):Int {
+fun calcNutrientValPercent(value: Double, minGoal : Double):Float {
     if(minGoal <= 0){
-        return 100
+        return 100F
     }
-    return ((value/minGoal.toDouble())*100).toInt()
+    return ((value/minGoal)*100).toFloat()
 }

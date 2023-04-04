@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import com.happyhappyyay.badnutrition.data.filter.NutritionFilter
 import com.happyhappyyay.badnutrition.ui.home.nutrientItems
 import com.happyhappyyay.badnutrition.ui.theme.BadNutritionTheme
-import com.happyhappyyay.badnutrition.util.SimpleDialogHeading
+import com.happyhappyyay.badnutrition.ui.util.SimpleDialogHeading
 import com.happyhappyyay.badnutrition.util.SimpleRadioButton
 import com.happyhappyyay.badnutrition.util.SimpleSwitchButton
 

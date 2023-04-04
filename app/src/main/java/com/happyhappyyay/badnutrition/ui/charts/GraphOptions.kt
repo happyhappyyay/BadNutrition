@@ -4,10 +4,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 data class GraphOptions(
-    val graphType: GraphType,
-    val zoomDistance: ZoomDistanceOption = ZoomDistanceOption.Day,
     val isEditMode: Boolean = false,
-    val selectedInd: Int = -1,
+    val dataSize: Int = 0,
+    var graphId: Int = 0,
+    val graphType: GraphType,
     val heightDp: Dp = 175.dp,
     val hasXAxisTicks: Boolean = false,
     val hasIndividualZoom: Boolean = false,
@@ -16,8 +16,9 @@ data class GraphOptions(
     val hasNoFillLineGraph: Boolean = false,
     val hasLineOfBestFit: Boolean = false,
     val hasFoodShapeSelectors: Boolean = false,
-    var graphId: Int = 0,
-    val onEdit: (Int) -> Unit = {},
+    val selectedInd: Int = -1,
+    val zoomDistance: ZoomDistanceOption = ZoomDistanceOption.Day,
+    val onEdit: (Int, Boolean) -> Unit = {_,_ -> },
     val onSelectData: (Int) -> Unit = {},
     val onZoom: (()->Unit) -> Unit = {},
 )

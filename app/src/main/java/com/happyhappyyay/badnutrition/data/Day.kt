@@ -11,7 +11,8 @@ import java.util.*
 
 @Entity(tableName = "day_table")
 data class Day(
-    @PrimaryKey val dateTime: Long = currentDateInMilliseconds(),
+    @PrimaryKey
+    val dateTime: Long = currentDateInMilliseconds(),
     val nutrients: List<NutrientValue>,
     val foods: List<Portion>
 )

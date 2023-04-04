@@ -15,10 +15,10 @@ import androidx.room.PrimaryKey
  * @property defaultGoal the nutrient information's standard nutrient goal.
  * @property goal the nutrient information's current goal.
  */
-@Entity(tableName = "nutrient_info_table")
+@Entity(tableName = "nutrient_info")
 data class NutrientInfo(
     @PrimaryKey(autoGenerate = true)
-    val nutrientInfoId: Int,
+    val nutrientInfoId: Long,
     val name: String,
     val measurement: String,
     val order: Int,

@@ -4,20 +4,19 @@ import com.happyhappyyay.badnutrition.data.database.*
 import com.happyhappyyay.badnutrition.data.food.Portion
 import com.happyhappyyay.badnutrition.data.nutrient.Goal
 import com.happyhappyyay.badnutrition.data.nutrient.NutrientValue
-import com.happyhappyyay.badnutrition.database.*
 import org.junit.Assert
 import org.junit.Test
 
 class TypeConverterUnitTest {
 
     private val nutrients = listOf(
-        NutrientValue(0,1),
-        NutrientValue(1,2),
-        NutrientValue(2,3),
-        NutrientValue(322,455),
-        NutrientValue(46666,5),
-        NutrientValue(5,65),
-        NutrientValue(-1,0)
+        NutrientValue(0,1.0),
+        NutrientValue(1,2.0),
+        NutrientValue(2,3.0),
+        NutrientValue(322,455.0),
+        NutrientValue(46666,5.0),
+        NutrientValue(5,65.0),
+        NutrientValue(-1,0.0)
     )
 
 //    private val foods = listOf(
@@ -29,11 +28,11 @@ class TypeConverterUnitTest {
 //    )
 
     private val portions = listOf(
-        Portion(0,155.32, 33),
-        Portion(0,233.1, 1),
-        Portion(5,1.0, 3),
-        Portion(11111111,1554.55, 9999),
-        Portion(219,43.0, 332222),
+        Portion(0,1,155.32, 33,123000),
+        Portion(0,2,233.1, 1,123999),
+        Portion(5,2,1.0, 3,123000),
+        Portion(11111111,33344,1554.55, 9999,124000),
+        Portion(219,231,43.0, 332222,124001),
         )
 
     @Test
@@ -78,14 +77,14 @@ class TypeConverterUnitTest {
     fun goalStringValid() {
         val expected = "1,50"
 
-        val actual = GoalStringConverter.fromGoal(Goal(1,50))
+        val actual = GoalStringConverter.fromGoal(Goal(1.0,50.0))
 
         Assert.assertEquals(expected,actual)
     }
 
     @Test
     fun stringGoalValid() {
-        val expected = Goal(-2333,555555)
+        val expected = Goal(-2333.0,555555.0)
 
         val actual = GoalStringConverter.fromString("-2333,555555")
 
@@ -95,11 +94,11 @@ class TypeConverterUnitTest {
     @Test
     fun portionStringValid() {
         val expected =
-            "0${UNIT_DELIMITER}155.32${UNIT_DELIMITER}33$GROUP_DELIMITER" +
-            "0${UNIT_DELIMITER}233.1${UNIT_DELIMITER}1$GROUP_DELIMITER" +
-            "5${UNIT_DELIMITER}1.0${UNIT_DELIMITER}3$GROUP_DELIMITER" +
-            "11111111${UNIT_DELIMITER}1554.55${UNIT_DELIMITER}9999$GROUP_DELIMITER" +
-            "219${UNIT_DELIMITER}43.0${UNIT_DELIMITER}332222"
+            "0${UNIT_DELIMITER}1${UNIT_DELIMITER}155.32${UNIT_DELIMITER}33${UNIT_DELIMITER}123000$GROUP_DELIMITER" +
+            "0${UNIT_DELIMITER}2${UNIT_DELIMITER}233.1${UNIT_DELIMITER}1${UNIT_DELIMITER}123999$GROUP_DELIMITER" +
+            "5${UNIT_DELIMITER}2${UNIT_DELIMITER}1.0${UNIT_DELIMITER}3${UNIT_DELIMITER}123000$GROUP_DELIMITER" +
+            "11111111${UNIT_DELIMITER}33344${UNIT_DELIMITER}1554.55${UNIT_DELIMITER}9999${UNIT_DELIMITER}124000$GROUP_DELIMITER" +
+            "219${UNIT_DELIMITER}231${UNIT_DELIMITER}43.0${UNIT_DELIMITER}332222${UNIT_DELIMITER}124001"
 
         val actual = ListPortionStringConverter.fromListPortion(portions)
 
@@ -120,11 +119,11 @@ class TypeConverterUnitTest {
         val expected = portions
 
         val actual = ListPortionStringConverter.fromString(
-            "0${UNIT_DELIMITER}155.32${UNIT_DELIMITER}33$GROUP_DELIMITER" +
-                "0${UNIT_DELIMITER}233.1${UNIT_DELIMITER}1$GROUP_DELIMITER" +
-                "5${UNIT_DELIMITER}1.0${UNIT_DELIMITER}3$GROUP_DELIMITER" +
-                "11111111${UNIT_DELIMITER}1554.55${UNIT_DELIMITER}9999$GROUP_DELIMITER" +
-                "219${UNIT_DELIMITER}43.0${UNIT_DELIMITER}332222"
+            "0${UNIT_DELIMITER}1${UNIT_DELIMITER}155.32${UNIT_DELIMITER}33${UNIT_DELIMITER}123000$GROUP_DELIMITER" +
+                    "0${UNIT_DELIMITER}2${UNIT_DELIMITER}233.1${UNIT_DELIMITER}1${UNIT_DELIMITER}123999$GROUP_DELIMITER" +
+                    "5${UNIT_DELIMITER}2${UNIT_DELIMITER}1.0${UNIT_DELIMITER}3${UNIT_DELIMITER}123000$GROUP_DELIMITER" +
+                    "11111111${UNIT_DELIMITER}33344${UNIT_DELIMITER}1554.55${UNIT_DELIMITER}9999${UNIT_DELIMITER}124000$GROUP_DELIMITER" +
+                    "219${UNIT_DELIMITER}231${UNIT_DELIMITER}43.0${UNIT_DELIMITER}332222${UNIT_DELIMITER}124001"
         )
 
         Assert.assertEquals(expected, actual)

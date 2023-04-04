@@ -7,14 +7,19 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.happyhappyyay.badnutrition.data.Day
 import com.happyhappyyay.badnutrition.data.food.Food
+import com.happyhappyyay.badnutrition.data.food.Portion
 import com.happyhappyyay.badnutrition.data.nutrient.NutrientInfo
+import com.happyhappyyay.badnutrition.data.partition.Partition
 
-@Database(entities = [NutrientInfo::class, Day::class, Food::class], version = 1, exportSchema = false)
+@Database(entities = [NutrientInfo::class, Day::class, Food::class, Partition::class, Portion::class], version = 1, exportSchema = false)
 @TypeConverters(ListNutrientValStringConverter::class, ListPortionStringConverter::class, GoalStringConverter::class)
 abstract class NutritionDatabase : RoomDatabase() {
 
     abstract val nutrientInfoDao: NutrientDao
     abstract val dayDao: DayDao
+    abstract val foodDao: FoodDao
+    abstract val portionDao: PortionDao
+    abstract val partitionDao: PartitionDao
 
     companion object {
 

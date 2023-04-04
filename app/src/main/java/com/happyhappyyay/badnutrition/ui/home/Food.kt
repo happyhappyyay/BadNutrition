@@ -225,7 +225,7 @@ fun NutrientItems(nutrients: List<Nutrient> = MockData().createNutritionList()) 
 
 @Composable
 fun NutrientItem(nutrient: Nutrient) {
-    val percentage = calcNutrientValPercent(nutrient.value, nutrient.goal.min)
+    val percentage = calcNutrientValPercent(nutrient.value * 1.0, nutrient.goal.min)
     Column {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -233,7 +233,7 @@ fun NutrientItem(nutrient: Nutrient) {
         ) {
             Text(text = nutrient.name)
             Text(
-                text = "${calcNutrientValPercent(nutrient.value, nutrient.goal.min)}%",
+                text = "${calcNutrientValPercent(nutrient.value * 1.0, nutrient.goal.min)}%",
                 textAlign = TextAlign.End
             )
         }
